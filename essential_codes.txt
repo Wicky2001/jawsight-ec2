@@ -560,3 +560,16 @@ Your controller
 
 
 
+docker build -f frontend/Dockerfile -t frontend-app .
+
+docker run -d `
+  --name frontend-container `
+  -p 8080:8080 `
+  -e VITE_API_BASE_URL="http://localhost:8080/api" `
+  frontend-app
+
+
+
+
+docker build -f backend/Dockerfile -t backend-app:v1 .
+docker run -d --env-file backend/.env -p 8080:8080 backend-app

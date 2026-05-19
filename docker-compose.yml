@@ -1,0 +1,59 @@
+services:
+  db:
+    image: postgres:16
+    container_name: jawsight_dev_db_root
+    restart: unless-stopped
+    env_file:
+      - /development_db/.env
+    environment:
+      POSTGRES_USER: ${ROOT_USER}
+      POSTGRES_PASSWORD: ${ROOT_PASSWORD}
+      POSTGRES_DB: ${ROOT_DB}
+    ports:
+      - "5432:5432"
+    healthcheck:
+      test:
+        [
+          "CMD-SHELL",
+          "pg_isready -U ${POSTGRES_USER:-app_user} -d ${POSTGRES_DB:-app_db}",
+        ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+      - ./development_db/init.sql:/docker-entrypoint-initdb.d/init.sql:ro
+
+  backend:
+    build:
+      context: .
+      dockerfile: backend/Dockerfile
+    container_name: jawsight_backend
+    restart: unless-stopped
+    depends_on:
+      db:
+        condition: service_healthy
+    env_file:
+      - ./backend/.env
+    environment:
+      DB_HOST: db
+    ports:
+      - "8081:8081"
+
+  frontend:
+    build:
+      context: .
+      dockerfile: frontend/Dockerfile
+    container_name: jawsight_frontend
+    restart: unless-stopped
+    env_file:
+      - ./frontend/.env
+    depends_on:
+      backend:
+        condition: service_started
+    ports:
+      - "8080:8080"
+
+volumes:
+  pgdata:
+    name: jawsight_dev_db_volume
