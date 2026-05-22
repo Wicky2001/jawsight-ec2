@@ -50,7 +50,7 @@ const Login = () => {
   const from =
     location.state?.from?.pathname || searchParams.get("from") || "/";
   const BASE_URL =
-    import.meta.env.VITE_API_BASE_URL || "http://localhost:8081/api";
+    `${import.meta.env.VITE_API_BASE_URL}/api` || "http://localhost:8081/api";
 
   const handleGoogleLogin = () => {
     window.location.href = `${BASE_URL}/auth/google?from=${encodeURIComponent(from)}`;

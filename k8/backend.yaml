@@ -1,0 +1,40 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: backend-service
+spec: #"What should this object do?"
+  selector:
+    app: backend # select the backend pod and expose
+  type: ClusterIP
+  ports:
+    - protocol: TCP
+      port: 8081
+      targetPort: 8081
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: backend-deployment
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: backend
+  template:
+    metadata:
+      labels:
+        app: backend # label by which pod can be selected
+    spec:
+      serviceAccountName: backend-service-account
+
+      containers:
+        - name: backend-container
+          image: 915658834610.dkr.ecr.ap-south-1.amazonaws.com/jawsight/backend:v4
+          imagePullPolicy: Always
+          ports:
+            - containerPort: 8081
+          envFrom:
+            - configMapRef:
+                name: backend-config
+            - secretRef:
+                name: backend-secret

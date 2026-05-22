@@ -37,8 +37,9 @@ RUN --mount=type=cache,target=/root/.npm,sharing=locked \
 
 
 COPY --from=builder --chown=nodejs:nodejs /app/backend/dist ./dist
+COPY --from=builder --chown=nodejs:nodejs /app/backend/public ./dist/backend/public
 
 USER nodejs
 EXPOSE 8081
 
-CMD ["node", "dist/backend/src/index.js"]
+ENTRYPOINT ["node", "dist/backend/src/index.js"]

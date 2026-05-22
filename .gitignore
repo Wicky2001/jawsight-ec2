@@ -4,9 +4,10 @@ yarn.lock
 pnpm-lock.yaml
 
 # Environment variables
-.env
+.env*
 .env.local
 .env.*.local
+backend-secret.yaml
 
 # Build and dist directories
 dist/

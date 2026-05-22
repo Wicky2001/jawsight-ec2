@@ -15,7 +15,7 @@ const parseCookies = (cookieString: string) => {
     }, {});
 };
 
-const whitelist = (process.env.CORS_ORIGINS || "http://localhost:3000")
+const whitelist = (process.env.CORS_ORIGINS || "http://localhost:8080")
   .split(",")
   .map((origin) => origin.trim())
   .filter(Boolean);

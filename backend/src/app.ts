@@ -5,15 +5,17 @@ import helmet from "helmet";
 import cookieParser from "cookie-parser";
 import compression from "compression";
 import passport from "./helpers/auth/passport.js";
-import { errorConverter,errorHandler } from "./helpers/error.handlers.js";
-import ApiError from "./helpers/ApiError.js";
-import httpStatus from "http-status";
+import { errorConverter, errorHandler } from "./helpers/error.handlers.js";
 import morgan from "morgan";
+import db from "./sequelize_models/index.js";
 
 const app = express();
+const acmeChallengeToken = "lr7rW1s_1wm7pxa65J6ji6bHgjTqBhNBp3mNbN_Mr8Q";
+const acmeChallengeValue =
+  "lr7rW1s_1wm7pxa65J6ji6bHgjTqBhNBp3mNbN_Mr8Q.SoU9ySdwmIzA9IM4b8d63LTRqTIxAXyTcK1lsKjlUNQ";
 
-const whitelist = (process.env.CORS_ORIGINS || "http://localhost:3000")
-  .split(",")
+const whitelist = process.env
+  .CORS_ORIGINS!.split(",")
   .map((origin) => origin.trim())
   .filter(Boolean);
 
@@ -39,12 +41,44 @@ app.use(express.urlencoded({ extended: true }));
 app.use(compression() as any);
 app.use(express.text());
 
+app.get("/.well-known/acme-challenge", (req, res) => {
+  res.status(200).type("text/plain").send(acmeChallengeValue);
+});
+
+app.get("/.well-known/acme-challenge/", (req, res) => {
+  res.status(200).type("text/plain").send(acmeChallengeValue);
+});
+
+app.get("/.well-known/acme-challenge/:token", (req, res) => {
+  if (req.params.token !== acmeChallengeToken) {
+    res.sendStatus(404);
+    return;
+  }
+
+  res.status(200).type("text/plain").send(acmeChallengeValue);
+});
+
 // Mount main routes
 app.use("/api", mainRouter);
 
-// 404 handler
-app.use((req, res, next) => {
-  next(new ApiError(httpStatus.NOT_FOUND, "Page Not Found"));
+app.get("/health", (req, res) => {
+  res.status(200).json({ status: "ok" });
+});
+
+app.get("/check-db", async (req, res) => {
+  try {
+    await db.sequelize.authenticate();
+    res.status(200).json({ status: "Database is connected" });
+  } catch (error) {
+    console.error("Error checking database connection:", error);
+    res
+      .status(500)
+      .json({ status: "Error connecting to database", error: error });
+  }
+});
+
+app.get("/env", (req, res) => {
+  res.status(200).json({ processEnv: process.env });
 });
 
 app.use(errorConverter);

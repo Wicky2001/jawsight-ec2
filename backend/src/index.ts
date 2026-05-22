@@ -8,8 +8,10 @@ const PORT = process.env.PORT || 8081;
 
 const startServer = async () => {
   try {
-    await db.sequelize.authenticate();
-    console.log("Database synced (force: true)");
+    if (process.env.NODE_ENV === "development") {
+      await db.sequelize.authenticate();
+      console.log("Database synced (force: true)");
+    }
 
     const server = http.createServer(app);
     const io = initializeSocket(server);

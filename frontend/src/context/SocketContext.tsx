@@ -26,7 +26,8 @@ const SocketContext = createContext<SocketContextType>({
   inferenceNotificationCount: 0,
 });
 
-const BACKEND_URL = import.meta.env.VITE_BACKEND_URL || "http://localhost:5000";
+const BACKEND_URL =
+  import.meta.env.VITE_API_BASE_URL || "http://localhost:8081";
 
 const parseBool = (v: string | undefined, defaultVal: boolean) =>
   v === undefined ? defaultVal : v === "true";

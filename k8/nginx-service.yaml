@@ -1,0 +1,25 @@
+controller:
+  config:
+    use-proxy-protocol: "true"
+
+  service:
+    targetPorts:
+      http: http
+      https: http
+
+    annotations:
+      service.beta.kubernetes.io/aws-load-balancer-type: "external"
+      service.beta.kubernetes.io/aws-load-balancer-scheme: "internet-facing"
+      service.beta.kubernetes.io/aws-load-balancer-nlb-target-type: "ip"
+      service.beta.kubernetes.io/aws-load-balancer-cross-zone-load-balancing-enabled: "true"
+
+      # TLS Termination
+      service.beta.kubernetes.io/aws-load-balancer-ssl-cert: "arn:aws:acm:ap-south-1:915658834610:certificate/da944a3d-6e35-4788-8294-1399dd46db7c"
+      service.beta.kubernetes.io/aws-load-balancer-ssl-ports: "443"
+      service.beta.kubernetes.io/aws-load-balancer-ssl-negotiation-policy: "ELBSecurityPolicy-TLS13-1-2-2021-06"
+
+      # Backend Protocol
+      service.beta.kubernetes.io/aws-load-balancer-backend-protocol: "tcp"
+
+      # THE FIX: Modern AWS Load Balancer Controller proxy protocol annotation
+      service.beta.kubernetes.io/aws-load-balancer-target-group-attributes: "proxy_protocol_v2.enabled=true"
