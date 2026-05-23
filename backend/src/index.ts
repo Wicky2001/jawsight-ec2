@@ -14,7 +14,7 @@ const startServer = async () => {
     }
 
     const server = http.createServer(app);
-    const io = initializeSocket(server);
+    const io = await initializeSocket(server);
 
     app.set("socketio", io);
 

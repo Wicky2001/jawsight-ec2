@@ -19,5 +19,10 @@
   },
   "keywords": [],
   "author": "",
-  "license": "MIT"
+  "license": "MIT",
+  "dependencies": {
+    "@socket.io/redis-adapter": "^8.3.0",
+    "backend": "^0.0.0",
+    "redis": "^5.12.1"
+  }
 }

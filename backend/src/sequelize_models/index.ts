@@ -1,8 +1,4 @@
-// import dotenv from "dotenv";
-// dotenv.config({
-//   debug:true,
-// });
-
+import "dotenv/config";
 import { Sequelize } from "sequelize";
 import { Doctor } from "./Doctor.js";
 import { Patient } from "./Patient.js";
@@ -10,7 +6,7 @@ import { InferenceHistory } from "./InferenceHistory.js";
 import { RefreshToken } from "./RefreshToken.js";
 import { AuditLog } from "./AuditLog.js";
 
-const sequelize = new Sequelize(
+let sequelize = new Sequelize(
   process.env.DB_NAME!,
   process.env.DB_USER!,
   process.env.DB_PASSWORD,
@@ -27,6 +23,20 @@ const sequelize = new Sequelize(
     },
   },
 );
+
+if (process.env.NODE_ENV === "development") {
+  sequelize = new Sequelize(
+    process.env.DB_NAME!,
+    process.env.DB_USER!,
+    process.env.DB_PASSWORD,
+    {
+      host: process.env.DB_HOST,
+      dialect: process.env.DB_DIALECT as any,
+      port: Number(process.env.DB_PORT),
+      logging: false,
+    },
+  );
+}
 
 const db = {
   sequelize,

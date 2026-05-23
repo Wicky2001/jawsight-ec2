@@ -29,7 +29,7 @@ spec:
 
       containers:
         - name: backend-container
-          image: 915658834610.dkr.ecr.ap-south-1.amazonaws.com/jawsight/backend:v4
+          image: 915658834610.dkr.ecr.ap-south-1.amazonaws.com/jawsight/backend:v5
           imagePullPolicy: Always
           ports:
             - containerPort: 8081

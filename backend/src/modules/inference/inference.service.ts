@@ -7,7 +7,6 @@ import type { UploadedDataObject } from "./types.js";
 import db from "../../sequelize_models/index.js";
 import ApiError from "../../helpers/ApiError.js";
 import status from "http-status";
-import { doctorSocketMap } from "../../helpers/socket.helper.js";
 import { Socket } from "socket.io";
 
 export const pushToSqsQueue = async (
@@ -304,13 +303,8 @@ export const emitToDoctor = (
   doctor_id: string,
   payload: any,
 ): void => {
-  const targetSocketId = doctorSocketMap.get(doctor_id);
-
-  if (!targetSocketId) {
-    return;
-  }
-
-  io.to(targetSocketId).emit("prediction_complete", payload);
+  console.log(`Emitting to doctor ${doctor_id}:`, payload);
+  io.to(doctor_id).emit("prediction_complete", payload);
 };
 
 export const confirmSnsSubscription = async (

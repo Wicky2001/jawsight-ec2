@@ -82,6 +82,8 @@ export const snsWebhookController = async (req: Request, res: Response) => {
       return;
     }
 
+    console.log("Generated signed URLs:", signedUrls);
+
     // =========================
     // Emit Success
     // =========================
@@ -92,6 +94,7 @@ export const snsWebhookController = async (req: Request, res: Response) => {
     });
   } catch (error) {
     try {
+      console.log("Error in SNS webhook controller:", error);
       const body =
         typeof req.body === "string" ? JSON.parse(req.body) : req.body;
 

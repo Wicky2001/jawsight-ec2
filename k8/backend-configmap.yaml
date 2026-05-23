@@ -15,3 +15,4 @@ data:
   S3_BUCKET: "jawsight-image-processor-dev-data"
   FRONTEND_URL: "https://www.jawsight.online"
   BACKEND_URL: "https://www.jawsight.online"
+  REDIS_URL: "redis://redis-service:6379"
