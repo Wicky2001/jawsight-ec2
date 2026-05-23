@@ -8,6 +8,7 @@ pnpm-lock.yaml
 .env.local
 .env.*.local
 backend-secret.yaml
+backend/public/
 
 # Build and dist directories
 dist/
@@ -108,3 +109,5 @@ local_testing.py
 
 u2net_human_seg.onnx
 sample_input_images/
+
+global-bundle.pem
