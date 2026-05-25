@@ -4,6 +4,26 @@ import axios from "axios";
 const BASE_URL =
   `${import.meta.env.VITE_API_BASE_URL}/api` || "http://localhost:8081/api";
 const currentPath = window.location.pathname;
+const traceHeaderName = "X-Amzn-Trace-Id";
+const isXrayHeaderEnabled = import.meta.env.VITE_XRAY_ENABLED === "true";
+
+const randomHex = (length: number) => {
+  const byteLength = Math.ceil(length / 2);
+  const bytes = new Uint8Array(byteLength);
+  crypto.getRandomValues(bytes);
+
+  return Array.from(bytes, (value) => value.toString(16).padStart(2, "0"))
+    .join("")
+    .slice(0, length);
+};
+
+const createTraceHeaderValue = () => {
+  const epochHex = Math.floor(Date.now() / 1000)
+    .toString(16)
+    .padStart(8, "0");
+
+  return `Root=1-${epochHex}-${randomHex(24)};Sampled=1`;
+};
 
 const client = axios.create({
   baseURL: BASE_URL,
@@ -14,6 +34,24 @@ const refreshClient = axios.create({
   baseURL: BASE_URL,
   withCredentials: true,
 });
+
+const attachTraceHeader = (config: any) => {
+  if (!isXrayHeaderEnabled) {
+    return config;
+  }
+
+  const headers = config.headers || {};
+
+  if (!headers[traceHeaderName] && !headers[traceHeaderName.toLowerCase()]) {
+    headers[traceHeaderName] = createTraceHeaderValue();
+  }
+
+  config.headers = headers;
+  return config;
+};
+
+client.interceptors.request.use(attachTraceHeader);
+refreshClient.interceptors.request.use(attachTraceHeader);
 
 client.interceptors.response.use(
   (response) => response,

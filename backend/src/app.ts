@@ -8,6 +8,8 @@ import passport from "./helpers/auth/passport.js";
 import { errorConverter, errorHandler } from "./helpers/error.handlers.js";
 import morgan from "morgan";
 import db from "./sequelize_models/index.js";
+import { tracingEnabled } from "./helpers/tracing.js";
+import xrayExpress from "aws-xray-sdk-express";
 
 const app = express();
 const acmeChallengeToken = "lr7rW1s_1wm7pxa65J6ji6bHgjTqBhNBp3mNbN_Mr8Q";
@@ -31,6 +33,13 @@ const corsOptions = {
 };
 
 app.use(morgan("combined")); // Use 'combined' for detailed logging, or 'dev' for concise output in development
+if (tracingEnabled) {
+  app.use(
+    xrayExpress.openSegment(
+      process.env.AWS_XRAY_TRACING_NAME || "jawsight-backend",
+    ),
+  );
+}
 app.use(passport.initialize());
 app.use(cors(corsOptions));
 
@@ -80,6 +89,10 @@ app.get("/check-db", async (req, res) => {
 app.get("/env", (req, res) => {
   res.status(200).json({ processEnv: process.env });
 });
+
+if (tracingEnabled) {
+  app.use(xrayExpress.closeSegment());
+}
 
 app.use(errorConverter);
 app.use(errorHandler);

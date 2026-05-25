@@ -29,5 +29,5 @@ spec:
         - name: frontend-container
           ports:
             - containerPort: 8080
-          image: 915658834610.dkr.ecr.ap-south-1.amazonaws.com/jawsight/frontend:v3
+          image: 915658834610.dkr.ecr.ap-south-1.amazonaws.com/jawsight/frontend:v4
           imagePullPolicy: Always

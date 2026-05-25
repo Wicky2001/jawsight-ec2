@@ -27,19 +27,23 @@ ENV NODE_ENV=production \
     NODE_OPTIONS="--max-old-space-size=256 --no-warnings" \
     NPM_CONFIG_LOGLEVEL=silent
 
-COPY package.json  package-lock.json ./
-COPY backend/package.json  ./backend/
-COPY shared/package.json  ./shared/
+# copy workspace manifests so npm can install at root
+COPY package.json package-lock.json ./
+COPY backend/package.json ./backend/
+COPY shared/package.json ./shared/
 
+# install production deps into /app/node_modules (root)
 RUN --mount=type=cache,target=/root/.npm,sharing=locked \
-    npm ci --workspace=backend --omit=dev && \
+    npm ci --omit=dev && \
     npm cache clean --force
 
+# copy only built backend artifacts and package manifests (avoid including src)
+COPY --from=builder --chown=nodejs:nodejs /app/backend/dist ./backend/dist
+COPY --from=builder --chown=nodejs:nodejs /app/backend/public ./backend/public
 
-COPY --from=builder --chown=nodejs:nodejs /app/backend/dist ./dist
-COPY --from=builder --chown=nodejs:nodejs /app/backend/public ./dist/backend/public
 
 USER nodejs
 EXPOSE 8081
 
-ENTRYPOINT ["node", "dist/backend/src/index.js"]
+# ENTRYPOINT points at compiled backend entry; adjust if build emits a different path
+ENTRYPOINT ["node", "backend/dist/backend/src/index.js"]

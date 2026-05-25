@@ -16,3 +16,6 @@ data:
   FRONTEND_URL: "https://www.jawsight.online"
   BACKEND_URL: "https://www.jawsight.online"
   REDIS_URL: "redis://redis-service:6379"
+  AWS_XRAY_ENABLED: "true"
+  AWS_XRAY_TRACING_NAME: "jawsight-backend"
+  AWS_XRAY_DAEMON_ADDRESS: "xray-service.xray.svc.cluster.local:2000"

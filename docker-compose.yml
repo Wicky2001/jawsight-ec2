@@ -4,7 +4,7 @@ services:
     container_name: jawsight_dev_db_root
     restart: unless-stopped
     env_file:
-      - /development_db/.env
+      - /development_services/.env
     environment:
       POSTGRES_USER: ${ROOT_USER}
       POSTGRES_PASSWORD: ${ROOT_PASSWORD}
@@ -24,6 +24,14 @@ services:
       - pgdata:/var/lib/postgresql/data
       - ./development_db/init.sql:/docker-entrypoint-initdb.d/init.sql:ro
 
+  redis:
+    image: redis:alpine
+    container_name: jawsight_dev_redis
+    restart: always
+
+    ports:
+      - "6379:6379"
+
   backend:
     build:
       context: .
@@ -33,10 +41,13 @@ services:
     depends_on:
       db:
         condition: service_healthy
+      redis:
+        condition: service_started
     env_file:
       - ./backend/.env
     environment:
       DB_HOST: db
+      REDIS_URL: redis://redis:6379
     ports:
       - "8081:8081"
 
@@ -44,6 +55,9 @@ services:
     build:
       context: .
       dockerfile: frontend/Dockerfile
+      args:
+        VITE_API_BASE_URL: http://localhost:8081
+        VITE_XRAY_ENABLED: "false"
     container_name: jawsight_frontend
     restart: unless-stopped
     env_file:

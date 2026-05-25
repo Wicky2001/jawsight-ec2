@@ -3,11 +3,29 @@ import { s3Client } from "../../helpers/aws.js";
 import { sqsClient } from "../../helpers/aws.js";
 import { PutObjectCommand, GetObjectCommand } from "@aws-sdk/client-s3";
 import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
+import AWSXRay, { tracingEnabled } from "../../helpers/tracing.js";
 import type { UploadedDataObject } from "./types.js";
 import db from "../../sequelize_models/index.js";
 import ApiError from "../../helpers/ApiError.js";
 import status from "http-status";
 import { Socket } from "socket.io";
+
+const getSqsTraceHeader = (): string | undefined => {
+  if (!tracingEnabled) {
+    return undefined;
+  }
+
+  const segment = AWSXRay.getSegment() as
+    | { trace_id?: string; id?: string; notTraced?: boolean }
+    | undefined;
+
+  if (!segment?.trace_id || !segment?.id) {
+    return undefined;
+  }
+
+  const sampled = segment.notTraced ? "0" : "1";
+  return `Root=${segment.trace_id};Parent=${segment.id};Sampled=${sampled}`;
+};
 
 export const pushToSqsQueue = async (
   messageBody: UploadedDataObject,
@@ -21,9 +39,21 @@ export const pushToSqsQueue = async (
     );
   }
 
+  const traceHeader = getSqsTraceHeader();
+
   const command = new SendMessageCommand({
     QueueUrl: queueUrl,
     MessageBody: JSON.stringify(messageBody),
+    ...(traceHeader
+      ? {
+          MessageSystemAttributes: {
+            AWSTraceHeader: {
+              DataType: "String",
+              StringValue: traceHeader,
+            },
+          },
+        }
+      : {}),
   });
 
   try {
@@ -123,7 +153,13 @@ export const uploadImagesToS3 = async (
       input_image_details,
     };
   } catch (error) {
-    throw new ApiError(status.INTERNAL_SERVER_ERROR, "Failed to upload images");
+    console.error("Error uploading images to S3:", error);
+    throw new ApiError(
+      status.INTERNAL_SERVER_ERROR,
+      "Failed to upload images",
+      undefined,
+      error,
+    );
   }
 };
 
@@ -182,6 +218,8 @@ export const saveInputImageKeysToDB = async (
     throw new ApiError(
       status.INTERNAL_SERVER_ERROR,
       "Error saving inference input",
+      undefined,
+      err,
     );
   }
 };
@@ -229,6 +267,8 @@ export const saveOutputImageKeysToDB = async (
     throw new ApiError(
       status.INTERNAL_SERVER_ERROR,
       "Error saving inference output",
+      undefined,
+      err,
     );
   }
 };
@@ -254,6 +294,8 @@ export const generateSignedUrls = async (outputKeys: {
     throw new ApiError(
       status.INTERNAL_SERVER_ERROR,
       "Failed to generate download URLs",
+      undefined,
+      error,
     );
   }
 };
@@ -294,7 +336,12 @@ export const processInferenceResult = async (
     if (error instanceof ApiError && error.statusCode === status.NOT_FOUND) {
       return null;
     }
-    throw error;
+    throw new ApiError(
+      status.INTERNAL_SERVER_ERROR,
+      "Failed to process inference result",
+      undefined,
+      error,
+    );
   }
 };
 

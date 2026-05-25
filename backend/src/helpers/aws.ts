@@ -1,12 +1,20 @@
 import "dotenv/config";
 import { S3Client } from "@aws-sdk/client-s3";
 import { SQSClient } from "@aws-sdk/client-sqs";
+import AWSXRay, { tracingEnabled } from "./tracing.js";
 
-export const s3Client = new S3Client({
+const baseS3Client = new S3Client({
   region: process.env.AWS_REGION || "ap-south-1",
 });
 
+export const s3Client = tracingEnabled
+  ? AWSXRay.captureAWSv3Client(baseS3Client)
+  : baseS3Client;
 
-export const sqsClient = new SQSClient({
+const baseSqsClient = new SQSClient({
   region: process.env.AWS_REGION || "ap-south-1",
 });
+
+export const sqsClient = tracingEnabled
+  ? AWSXRay.captureAWSv3Client(baseSqsClient)
+  : baseSqsClient;
