@@ -45,9 +45,8 @@ jobs:
           echo "image=$IMAGE_URI" >> $GITHUB_OUTPUT
 
       # 5. Deploy to Lambda
-      - name: Deploy to AWS Lambda
-        uses: aws-actions/aws-lambda-deploy@v1
-        with:
-          function-name: ${{ env.LAMBDA_FUNCTION_NAME }}
-          image-uri: ${{ steps.build-image.outputs.image }}
-          package-type: Image
+      - name: Deploy Lambda Image
+        run: |
+          aws lambda update-function-code \
+            --function-name "$LAMBDA_FUNCTION_NAME" \
+            --image-uri "915658834610.dkr.ecr.ap-south-1.amazonaws.com/$ECR_REPOSITORY:${{ github.sha }}"
