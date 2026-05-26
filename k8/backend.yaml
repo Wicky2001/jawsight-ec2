@@ -1,4 +1,27 @@
 apiVersion: v1
+kind: ConfigMap
+
+metadata:
+  name: backend-config
+
+data:
+  NODE_ENV: "production"
+  PORT: "8081"
+  DB_PORT: "5432"
+  DB_DIALECT: "postgres"
+  CORS_ORIGINS: "https://www.jawsight.online"
+  AWS_REGION: "ap-south-1"
+  SQS_QUEUE_URL: "https://sqs.ap-south-1.amazonaws.com/915658834610/jawsight-image-processor-image-processing-queue"
+  S3_BUCKET: "jawsight-image-processor-dev-data"
+  FRONTEND_URL: "https://www.jawsight.online"
+  BACKEND_URL: "https://www.jawsight.online"
+  REDIS_URL: "redis://redis-service:6379"
+  AWS_XRAY_ENABLED: "true"
+  AWS_XRAY_TRACING_NAME: "jawsight-backend"
+  AWS_XRAY_DAEMON_ADDRESS: "xray-service.xray.svc.cluster.local:2000"
+
+---
+apiVersion: v1
 kind: ServiceAccount
 metadata:
   name: backend-service-account
