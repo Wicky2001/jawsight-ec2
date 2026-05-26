@@ -39,7 +39,6 @@ RUN --mount=type=cache,target=/root/.npm,sharing=locked \
 
 # copy only built backend artifacts and package manifests (avoid including src)
 COPY --from=builder --chown=nodejs:nodejs /app/backend/dist ./backend/dist
-COPY --from=builder --chown=nodejs:nodejs /app/backend/public ./backend/public
 
 
 USER nodejs
