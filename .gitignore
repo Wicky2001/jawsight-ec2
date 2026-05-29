@@ -111,3 +111,5 @@ u2net_human_seg.onnx
 sample_input_images/
 
 global-bundle.pem
+jawsight-deployer
+jawsight-deployer.pub

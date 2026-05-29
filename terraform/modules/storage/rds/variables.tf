@@ -29,6 +29,11 @@ variable "project_name" {
   default     = "jawsight"
 }
 
+variable "environment" {
+  description = "Environment name"
+  type        = string
+}
+
 variable "private_subnet_ids" {
   description = "List of private subnet IDs for RDS subnet group"
   type        = list(string)

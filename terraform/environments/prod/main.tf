@@ -17,11 +17,13 @@ provider "aws" {
 module "vpc" {
   source       = "../../modules/networking/vpc"
   project_name = var.project_name
+  environment  = var.environment
 }
 
 module "security_groups" {
   source       = "../../modules/networking/security-groups"
   project_name = var.project_name
+  environment  = var.environment
   vpc_id      = module.vpc.vpc_id
   vpc_cidr    = module.vpc.vpc_cidr
 }
@@ -31,15 +33,18 @@ module "ec2" {
     source       = "../../modules/compute/ec2"
     project_name = var.project_name
     vpc_id       = module.vpc.vpc_id
-    private_subnet_id = module.vpc.private_subnet_id
+    private_subnet_id = module.vpc.private_subnet_1_id
     security_group_id = module.security_groups.ec2_security_group_id
     instance_type = var.instance_type
     environment  = var.environment
+    instance_profile_name = module.iam.ec2_instance_profile_name
+    public_key_openssh = var.public_key_openssh
 }
 
 module "nlb" {
     source       = "../../modules/networking/nlb"
     project_name = var.project_name
+    environment  = var.environment
     vpc_id       = module.vpc.vpc_id
     public_subnet_id = module.vpc.public_subnet_id
     acm_certificate_arn = var.acm_certificate_arn
@@ -49,9 +54,64 @@ module "nlb" {
 module "rds" {
   source             = "../../modules/storage/rds"
   project_name       = var.project_name
+  environment        = var.environment
   db_instance_class  = "db.t3.micro"
   db_username        = var.db_username
   db_password        = var.db_password
   private_subnet_ids = [module.vpc.private_subnet_1_id, module.vpc.private_subnet_2_id]
   rds_sg_id          = module.security_groups.rds_sg_id
+}
+
+module "s3" {
+  source       = "../../modules/storage/s3"
+  project_name = var.project_name
+  environment  = var.environment
+}
+
+module "sqs" {
+  source                 = "../../modules/messaging/sqs"
+  project_name           = var.project_name
+  environment            = var.environment
+  sqs_visibility_timeout = var.sqs_visibility_timeout
+}
+
+module "sns" {
+  source       = "../../modules/messaging/sns"
+  project_name = var.project_name
+  environment  = var.environment
+}
+
+module "sns_subscription" {
+  source      = "../../modules/messaging/subscriptions"
+  topic_arn   = module.sns.topic_arn
+  webhook_url = var.webhook_url
+}
+
+module "ecr" {
+  source       = "../../modules/storage/ecr"
+  project_name = var.project_name
+  environment  = var.environment
+}
+
+module "iam" {
+  source                     = "../../modules/iam/roles"
+  project_name               = var.project_name
+  environment                = var.environment
+  s3_bucket_arn              = module.s3.s3_bucket_arn
+  image_processing_queue_arn = module.sqs.image_processing_queue_arn
+  ecr_repository_arn         = module.ecr.repository_arn
+  sns_topic_arn              = module.sns.topic_arn
+}
+
+module "lambda" {
+  source                     = "../../modules/compute/lambda"
+  project_name               = var.project_name
+  environment                = var.environment
+  lambda_role_arn            = module.iam.lambda_role_arn
+  timeout                    = var.lambda_timeout
+  memory                     = var.lambda_memory
+  image_uri                  = var.image_uri
+  s3_bucket_name             = module.s3.s3_bucket_name
+  sns_topic_arn              = module.sns.topic_arn
+  image_processing_queue_arn = module.sqs.image_processing_queue_arn
 }

@@ -1,3 +1,9 @@
+resource "aws_key_pair" "deployer" {
+  key_name   = "${var.project_name}-${var.environment}-deployer-key"
+  public_key = var.public_key_openssh 
+
+}
+
 data "aws_ami" "amazon_linux_2023" {
   most_recent = true
   owners      = ["amazon"]
@@ -12,12 +18,14 @@ resource "aws_instance" "app_server" {
   instance_type = var.instance_type
   subnet_id     = var.private_subnet_id
 
+  iam_instance_profile = var.instance_profile_name
   vpc_security_group_ids = [var.security_group_id]
+  key_name = aws_key_pair.deployer.key_name
 
-  # Optional: IAM instance profile for SSM (so you don't need SSH/Bastion to access it)
-  # iam_instance_profile = var.iam_instance_profile_name 
+
+  
 
   tags = {
-    Name = "${var.project_name}-app-ec2"
+    Name = "${var.project_name}-${var.environment}-app-ec2"
   }
 }

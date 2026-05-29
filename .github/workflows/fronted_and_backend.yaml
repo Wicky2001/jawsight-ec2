@@ -1,0 +1,92 @@
+name: Deploy to Production EC2
+
+on:
+  push:
+    branches:
+      - main
+
+env:
+  AWS_REGION: us-east-1
+  ECR_BACKEND_REPO: jawsight-backend
+  ECR_FRONTEND_REPO: jawsight-frontend
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Source Code
+        uses: actions/checkout@v4
+
+      # 1. Detect which folders changed
+      - name: Check for file changes
+        uses: dorny/paths-filter@v3
+        id: changes
+        with:
+          filters: |
+            frontend:
+              - 'frontend/**'
+            backend:
+              - 'backend/**'
+            infra:
+              - 'docker-compose.prod.yml'
+              - 'nginx.conf'
+
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ env.AWS_REGION }}
+
+      - name: Log in to Amazon ECR
+        id: login-ecr
+        uses: aws-actions/amazon-ecr-login@v2
+
+      # 2. Build Backend ONLY if backend files changed
+      - name: Build and push Backend Image
+        if: steps.changes.outputs.backend == 'true'
+        env:
+          ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
+        run: |
+          docker build -t $ECR_REGISTRY/${{ env.ECR_BACKEND_REPO }}:latest -f backend/Dockerfile .
+          docker push $ECR_REGISTRY/${{ env.ECR_BACKEND_REPO }}:latest
+
+      # 3. Build Frontend ONLY if frontend files changed
+      - name: Build and push Frontend Image
+        if: steps.changes.outputs.frontend == 'true'
+        env:
+          ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
+        run: |
+          docker build \
+            --build-arg VITE_API_BASE_URL=https://www.jawsight.online \
+            --build-arg VITE_XRAY_ENABLED=false \
+            -t $ECR_REGISTRY/${{ env.ECR_FRONTEND_REPO }}:latest -f frontend/Dockerfile .
+          docker push $ECR_REGISTRY/${{ env.ECR_FRONTEND_REPO }}:latest
+
+      # 4. Copy files ONLY if infrastructure files changed
+      - name: Copy deployment files to EC2
+        if: steps.changes.outputs.infra == 'true'
+        uses: appleboy/scp-action@master
+        with:
+          host: ${{ secrets.EC2_HOST }}
+          username: ${{ secrets.EC2_USER }}
+          key: ${{ secrets.EC2_SSH_KEY }}
+          source: "docker-compose.prod.yml,nginx.conf"
+          target: "~/app"
+
+      # 5. Always run the deployment script
+      - name: Execute Deployment Commands via SSH
+        uses: appleboy/ssh-action@master
+        with:
+          host: ${{ secrets.EC2_HOST }}
+          username: ${{ secrets.EC2_USER }}
+          key: ${{ secrets.EC2_SSH_KEY }}
+          script: |
+            cd ~/app
+            aws ecr get-login-password --region ${{ env.AWS_REGION }} | docker login --username AWS --password-stdin ${{ steps.login-ecr.outputs.registry }}
+
+            # Docker pull will ONLY download the images that were updated with a new 'latest' version
+            docker compose -f docker-compose.prod.yml pull
+
+            # Docker up will ONLY restart the containers whose images actually changed
+            docker compose -f docker-compose.prod.yml up -d

@@ -1,6 +1,6 @@
 # EC2 Security Group
 resource "aws_security_group" "ec2_sg" {
-  name        = "${var.project_name}-ec2-sg"
+  name        = "${var.project_name}-${var.environment}-ec2-sg"
   description = "Allow inbound traffic from NLB and outbound to internet"
   vpc_id      = var.vpc_id
 
@@ -10,6 +10,15 @@ resource "aws_security_group" "ec2_sg" {
     to_port     = 80
     protocol    = "tcp"
     cidr_blocks = [var.vpc_cidr]
+  }
+
+  ingress{
+    description = "SSH from anywhere"
+    from_port = 22
+    to_port = 22
+    protocol = "tcp"
+    cidr_blocks = ["0.0.0.0/0"]
+
   }
 
   egress {
@@ -22,7 +31,7 @@ resource "aws_security_group" "ec2_sg" {
 
 # RDS Security Group
 resource "aws_security_group" "rds_sg" {
-  name        = "${var.project_name}-rds-sg"
+  name        = "${var.project_name}-${var.environment}-rds-sg"
   description = "Allow PostgreSQL inbound traffic from EC2"
   vpc_id      = var.vpc_id
 

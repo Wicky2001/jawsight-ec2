@@ -3,3 +3,8 @@ variable "project_name" {
   type        = string
   default     = "jawsight"
 }
+
+variable "environment" {
+  description = "Environment name"
+  type        = string
+}

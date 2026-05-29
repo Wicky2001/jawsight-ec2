@@ -1,15 +1,15 @@
 # TODO: Add networking ALB
 resource "aws_lb" "main" {
-  name               = "${var.project_name}-app-nlb"
+  name               = "${var.project_name}-${var.environment}-nlb"
   internal           = false
   load_balancer_type = "network"
   subnets            = [var.public_subnet_id]
 
-  tags = { Name = "${var.project_name}-nlb" }
+  tags = { Name = "${var.project_name}-${var.environment}-nlb" }
 }
 
 resource "aws_lb_target_group" "app" {
-  name        = "${var.project_name}-tg"
+  name        = "${var.project_name}-${var.environment}-tg"
   port        = 80
   protocol    = "TCP"
   vpc_id      = var.vpc_id

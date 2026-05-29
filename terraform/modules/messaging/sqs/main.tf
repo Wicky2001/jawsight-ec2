@@ -1,6 +1,6 @@
 # Dead Letter Queue for image processing
 resource "aws_sqs_queue" "image_processing_dlq" {
-  name = "${var.project_name}-image-processing-dlq"
+  name = "${var.project_name}-${var.environment}-dlq"
   
   # Standard DLQ settings
   visibility_timeout_seconds = 300
@@ -11,12 +11,18 @@ resource "aws_sqs_queue" "image_processing_dlq" {
   
   # Enable server-side encryption
   sqs_managed_sse_enabled = true
+
+  tags = {
+    Name        = "${var.project_name}-${var.environment}-dlq"
+    Environment = var.environment
+    Purpose     = "Image processing workflow"
+  }
 }
 
 
 # Main image processing queue
 resource "aws_sqs_queue" "image_processing_queue" {
-  name = "${var.project_name}-image-processing-queue"
+  name = "${var.project_name}-${var.environment}-queue"
   # Queue configuration matching your current settings
   visibility_timeout_seconds = var.sqs_visibility_timeout # must be greater than Lambda timeout to prevent premature retries
   message_retention_seconds  = 3600     # 1 hour
@@ -34,7 +40,7 @@ resource "aws_sqs_queue" "image_processing_queue" {
   sqs_managed_sse_enabled = true
   
   tags = {
-    Name        = "${var.project_name}-image-processing-queue"
+    Name        = "${var.project_name}-${var.environment}-queue"
     Environment = var.environment
     Purpose     = "Image processing workflow"
   }

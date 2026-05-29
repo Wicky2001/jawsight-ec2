@@ -30,3 +30,13 @@ variable "instance_type" {
   type        = string
   default     = "t3.micro"
 }
+
+variable "instance_profile_name" {
+  description = "IAM instance profile name for EC2 instance (for SSM access)"
+  type        = string
+}
+
+variable "public_key_openssh"{
+  description = "Public key in OpenSSH format for EC2 key pair"
+  type        = string
+}
