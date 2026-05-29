@@ -12,6 +12,7 @@ import { tracingEnabled } from "./helpers/tracing.js";
 import xrayExpress from "aws-xray-sdk-express";
 
 const app = express();
+app.set("trust proxy", true);
 const acmeChallengeToken = "lr7rW1s_1wm7pxa65J6ji6bHgjTqBhNBp3mNbN_Mr8Q";
 const acmeChallengeValue =
   "lr7rW1s_1wm7pxa65J6ji6bHgjTqBhNBp3mNbN_Mr8Q.SoU9ySdwmIzA9IM4b8d63LTRqTIxAXyTcK1lsKjlUNQ";

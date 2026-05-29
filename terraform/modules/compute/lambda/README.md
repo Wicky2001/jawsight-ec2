@@ -1,1 +1,0 @@
-# Lambda Module Placeholder

@@ -1,0 +1,51 @@
+services:
+  redis:
+    image: redis:alpine
+    container_name: jawsight_dev_redis
+    restart: always
+    ports:
+      - "6379:6379" # Consider removing if you don't need external Redis access
+
+  backend:
+    build:
+      context: .
+      dockerfile: backend/Dockerfile
+    container_name: jawsight_backend
+    restart: unless-stopped
+    depends_on:
+      redis:
+        condition: service_started
+    env_file:
+      - ./backend/.env.production
+    environment:
+      DB_HOST: db
+      REDIS_URL: redis://redis:6379
+
+  frontend:
+    build:
+      context: .
+      dockerfile: frontend/Dockerfile
+      args:
+        VITE_API_BASE_URL: https://www.jawsight.online
+        VITE_XRAY_ENABLED: "false"
+    container_name: jawsight_frontend
+    restart: unless-stopped
+    env_file:
+      - ./frontend/.env.production
+    depends_on:
+      backend:
+        condition: service_started
+    # Removed ports binding to host; NGINX will route internally
+
+  # THE NEW REVERSE PROXY
+  nginx:
+    image: nginx:alpine
+    container_name: jawsight_nginx
+    restart: unless-stopped
+    ports:
+      - "80:80"
+    volumes:
+      - ./nginx.conf:/etc/nginx/nginx.conf:ro
+    depends_on:
+      - frontend
+      - backend

@@ -1,5 +1,5 @@
 variable "project_name" {
   description = "Project name"
   type        = string
-  default     = "image-processor"
+  default     = "jawsight"
 }
