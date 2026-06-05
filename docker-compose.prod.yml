@@ -14,9 +14,6 @@ services:
         condition: service_started
     env_file:
       - .env
-    environment:
-      DB_HOST: db
-      REDIS_URL: redis://redis:6379
 
   frontend:
     # REPLACE with your actual AWS Account ID and Region
