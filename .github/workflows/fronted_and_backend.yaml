@@ -79,21 +79,54 @@ jobs:
       # 5. Execute Deployment Commands via AWS SSM
       - name: Execute Deployment Commands via AWS SSM
         run: |
-          aws ssm send-command \
+          # 1. Trigger the command and capture the unique Command ID
+          COMMAND_ID=$(aws ssm send-command \
             --instance-ids "${{ secrets.EC2_INSTANCE_ID }}" \
             --document-name "AWS-RunShellScript" \
             --parameters 'commands=[
-              "mkdir -p ~/app",
-              "cd ~/app",
-              
-              "# Download the fresh files from S3",
-              "aws s3 cp s3://jawsight-deployment-artifacts/docker-compose.prod.yml .",
-              "aws s3 cp s3://jawsight-deployment-artifacts/nginx.conf .",
-              "aws s3 cp s3://jawsight-deployment-artifacts/.env .",
-              
-              "# Authenticate with ECR and restart containers",
-              "aws ecr get-login-password --region ${{ env.AWS_REGION }} | docker login --username AWS --password-stdin ${{ steps.login-ecr.outputs.registry }}",
-              "docker compose -f docker-compose.prod.yml pull",
-              "docker compose -f docker-compose.prod.yml up -d"
+              "mkdir -p /home/ec2-user/app",
+              "chown -R ec2-user:ec2-user /home/ec2-user/app",
+              "aws s3 cp s3://jawsight-deployment-artifacts/docker-compose.prod.yml /home/ec2-user/app/docker-compose.prod.yml",
+              "aws s3 cp s3://jawsight-deployment-artifacts/nginx.conf /home/ec2-user/app/nginx.conf",
+              "aws s3 cp s3://jawsight-deployment-artifacts/.env /home/ec2-user/app/.env",
+              "cd /home/ec2-user/app && aws ecr get-login-password --region ${{ env.AWS_REGION }} | docker login --username AWS --password-stdin ${{ steps.login-ecr.outputs.registry }}",
+              "cd /home/ec2-user/app && docker compose -f docker-compose.prod.yml pull",
+              "cd /home/ec2-user/app && docker compose -f docker-compose.prod.yml up -d"
             ]' \
+            --region ${{ env.AWS_REGION }} \
+            --query "Command.CommandId" \
+            --output text)
+
+          echo "SSM Command triggered successfully. Command ID: $COMMAND_ID"
+          echo "Waiting for the deployment script to complete on the EC2 instance..."
+
+          # 2. Wait until the command transitions out of Pending/InProgress
+          aws ssm wait command-executed \
+            --command-id "$COMMAND_ID" \
+            --instance-id "${{ secrets.EC2_INSTANCE_ID }}" \
             --region ${{ env.AWS_REGION }}
+
+          # 3. Fetch the final status and execution output
+          OUTPUT=$(aws ssm get-command-invocation \
+            --command-id "$COMMAND_ID" \
+            --instance-id "${{ secrets.EC2_INSTANCE_ID }}" \
+            --region ${{ env.AWS_REGION }} \
+            --query "{Status: Status, Stdout: StandardOutputContent, Stderr: StandardErrorContent}" \
+            --output json)
+
+          STATUS=$(echo "$OUTPUT" | jq -r '.Status')
+          STDOUT=$(echo "$OUTPUT" | jq -r '.Stdout')
+          STDERR=$(echo "$OUTPUT" | jq -r '.Stderr')
+
+          # 4. Print the execution logs to the GitHub runner console
+          echo "=== EC2 DEPLOYMENT STANDARD OUTPUT ==="
+          echo "$STDOUT"
+
+          if [ "$STATUS" != "Success" ]; then
+            echo "=== EC2 DEPLOYMENT ERROR LOGS ==="
+            echo "$STDERR"
+            echo "Error: SSM Deployment failed with status: $STATUS"
+            exit 1
+          fi
+
+          echo "Deployment completed successfully with status: $STATUS"
