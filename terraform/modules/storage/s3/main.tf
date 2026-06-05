@@ -4,7 +4,7 @@ resource "aws_s3_bucket" "data" {
 }
 
 resource "aws_s3_bucket" "deployment_artifacts"{
-  bucket = "${var.project_name}-${var.environment}-deployment-artifacts"
+  bucket = "${var.project_name}-deployment-artifacts"
 
 }
 

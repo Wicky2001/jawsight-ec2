@@ -9,9 +9,9 @@ on:
       - .github/workflows/lambda-deploy.yml
 
 env:
-  AWS_REGION: ${{ vars.AWS_REGION }}
-  ECR_REPOSITORY: ${{ vars.LAMBDA_ECR_REPOSITORY }}
-  LAMBDA_FUNCTION_NAME: ${{ vars.LAMBDA_FUNCTION_NAME }} #jawsight-image-processing-lambda
+  AWS_REGION: ap-south-1
+  ECR_REPOSITORY: jawsight-production-lambda
+  LAMBDA_FUNCTION_NAME: jawsight-production-lambda #jawsight-image-processing-lambda
 
 jobs:
   deploy-to-lambda:
