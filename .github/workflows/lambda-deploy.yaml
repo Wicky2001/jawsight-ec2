@@ -6,12 +6,12 @@ on:
       - main
     paths:
       - lambda/**
-      - .github/workflows/lambda-deploy.yml
+      - .github/workflows/lambda-deploy.yaml
 
 env:
   AWS_REGION: ap-south-1
   ECR_REPOSITORY: jawsight-production-lambda
-  LAMBDA_FUNCTION_NAME: jawsight-production-lambda #jawsight-image-processing-lambda
+  LAMBDA_FUNCTION_NAME: jawsight-production-lambda
 
 jobs:
   deploy-to-lambda:
