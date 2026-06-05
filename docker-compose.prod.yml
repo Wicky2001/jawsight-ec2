@@ -6,7 +6,7 @@ services:
 
   backend:
     # REPLACE with your actual AWS Account ID and Region
-    image: 123456789012.dkr.ecr.ap-south-1.amazonaws.com/jawsight-backend:latest
+    image: 915658834610.dkr.ecr.ap-south-1.amazonaws.com/jawsight-production-backend:latest
     container_name: jawsight_backend
     restart: unless-stopped
     depends_on:
@@ -20,7 +20,7 @@ services:
 
   frontend:
     # REPLACE with your actual AWS Account ID and Region
-    image: 123456789012.dkr.ecr.ap-south-1.amazonaws.com/jawsight-frontend:latest
+    image: 915658834610.dkr.ecr.ap-south-1.amazonaws.com/jawsight-production-frontend:latest
     container_name: jawsight_frontend
     restart: unless-stopped
     env_file:
