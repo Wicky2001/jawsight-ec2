@@ -17,6 +17,7 @@ resource "aws_lb_target_group" "app" {
 
   # CRITICAL: Enable Proxy Protocol v2 for your NGINX setup
   proxy_protocol_v2 = true
+  preserve_client_ip = false
 
 health_check {
     protocol            = "HTTP"
