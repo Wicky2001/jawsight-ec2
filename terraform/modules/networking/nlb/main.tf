@@ -18,9 +18,15 @@ resource "aws_lb_target_group" "app" {
   # CRITICAL: Enable Proxy Protocol v2 for your NGINX setup
   proxy_protocol_v2 = true
 
-  health_check {
-    protocol = "TCP"
-    port     = "traffic-port"
+health_check {
+    protocol            = "HTTP"
+    port                = "traffic-port"
+    path                = "/health"
+    matcher             = "200-399" # Accept any successful HTTP status code
+    healthy_threshold   = 3         # Number of successes to become healthy
+    unhealthy_threshold = 3         # Number of failures to become unhealthy
+    timeout             = 6         # Seconds before a check fails
+    interval            = 30        # Seconds between each check
   }
 }
 

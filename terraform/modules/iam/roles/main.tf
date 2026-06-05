@@ -66,25 +66,7 @@ resource "aws_iam_policy" "lambda_policy" {
         ]
         Resource = "arn:aws:logs:*:*:*"
       },
-      {
-        Effect = "Allow"
-        Action = [
-          "ecr:BatchCheckLayerAvailability",
-          "ecr:BatchGetImage",
-          "ecr:GetDownloadUrlForLayer"
-        ]
-        Resource = [
-          var.lambda_repository_arn,
-        
-        ]
-      },
-      {
-        "Effect" : "Allow",
-        "Action" : [
-          "ecr:GetAuthorizationToken"
-        ],
-        "Resource" : "${var.lambda_repository_arn}"
-      }
+    
     ]
   })
 }
