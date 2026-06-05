@@ -6,25 +6,25 @@ services:
 
   backend:
     # REPLACE with your actual AWS Account ID and Region
-    image: 123456789012.dkr.ecr.us-east-1.amazonaws.com/jawsight-backend:latest
+    image: 123456789012.dkr.ecr.ap-south-1.amazonaws.com/jawsight-backend:latest
     container_name: jawsight_backend
     restart: unless-stopped
     depends_on:
       redis:
         condition: service_started
     env_file:
-      - ./backend/.env.production
+      - .env
     environment:
       DB_HOST: db
       REDIS_URL: redis://redis:6379
 
   frontend:
     # REPLACE with your actual AWS Account ID and Region
-    image: 123456789012.dkr.ecr.us-east-1.amazonaws.com/jawsight-frontend:latest
+    image: 123456789012.dkr.ecr.ap-south-1.amazonaws.com/jawsight-frontend:latest
     container_name: jawsight_frontend
     restart: unless-stopped
     env_file:
-      - ./frontend/.env.production
+      - .env
     depends_on:
       backend:
         condition: service_started
