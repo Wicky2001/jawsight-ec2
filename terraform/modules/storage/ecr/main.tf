@@ -49,3 +49,13 @@ resource "aws_ecr_repository" "backend_repo" {
     scan_on_push = true
   }
 }
+
+
+resource "aws_ecr_repository" "migrations_repo" {
+  name                 = "${var.project_name}-${var.environment}-migrations"
+  image_tag_mutability = "MUTABLE"
+
+  image_scanning_configuration {
+    scan_on_push = true
+  }
+}

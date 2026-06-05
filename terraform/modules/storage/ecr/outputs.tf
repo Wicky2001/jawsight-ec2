@@ -28,3 +28,16 @@ output "backend_repository_arn" {
   description = "ARN of the Backend ECR repository"
   value = aws_ecr_repository.backend_repo.arn
 }
+
+
+output "migrations_repository_url" {
+  description = "URL of the Migrations ECR repository"
+  value       = aws_ecr_repository.migrations_repo.repository_url
+}
+
+output "migrations_repository_arn" {
+  description = "ARN of the Migrations ECR repository"
+  value = aws_ecr_repository.migrations_repo.arn
+}
+
+

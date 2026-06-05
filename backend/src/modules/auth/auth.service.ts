@@ -37,6 +37,8 @@ export const findOrCreateGoogleUser = async (
     throw new ApiError(
       httpStatus.INTERNAL_SERVER_ERROR,
       "Error during Google authentication",
+      undefined,
+      error,
     );
   }
 };

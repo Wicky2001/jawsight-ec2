@@ -51,3 +51,9 @@ variable "backend_repository_arn" {
   type        = string
   default     = ""
 }
+
+variable "migrations_repository_arn" {
+  description = "ARN of ecr repository for migrations images"
+  type        = string
+  default     = ""
+}

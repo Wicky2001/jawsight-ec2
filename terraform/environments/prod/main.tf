@@ -104,6 +104,7 @@ module "iam" {
   lambda_repository_arn      = module.ecr.lambda_repository_arn
   frontend_repository_arn    = module.ecr.frontend_repository_arn
   backend_repository_arn     = module.ecr.backend_repository_arn
+  migrations_repository_arn  = module.ecr.migrations_repository_arn
   sns_topic_arn              = module.sns.topic_arn
 }
 

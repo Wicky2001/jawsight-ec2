@@ -88,6 +88,11 @@ output "backend_repository_arn" {
 	value = module.ecr.backend_repository_arn
 }
 
+output "migrations_repository_arn" {
+	description = "ARN of the Migrations ECR repository"
+	value = module.ecr.migrations_repository_arn
+}
+
 output "lambda_repository_arn" {
 	description = "ARN of the Lambda ECR repository"
 	value = module.ecr.lambda_repository_arn
@@ -102,3 +107,5 @@ output "ec2_instance_arn" {
 	description = "ARN of the EC2 instance"
 	value       = module.ec2.app_server_arn
 }
+
+

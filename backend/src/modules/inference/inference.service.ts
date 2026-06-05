@@ -64,6 +64,8 @@ export const pushToSqsQueue = async (
     throw new ApiError(
       status.INTERNAL_SERVER_ERROR,
       "Failed to queue inference request",
+      undefined,
+      error,
     );
   }
 };

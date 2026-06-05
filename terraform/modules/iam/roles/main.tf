@@ -155,7 +155,8 @@ resource "aws_iam_policy" "jawsight_app_policy" {
         ]
         Resource = [
           var.frontend_repository_arn,
-          var.backend_repository_arn
+          var.backend_repository_arn,
+          var.migrations_repository_arn,
         ]
       },
       {
