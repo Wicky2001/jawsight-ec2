@@ -104,7 +104,7 @@ jobs:
           aws ssm wait command-executed \
             --command-id "$COMMAND_ID" \
             --instance-id "${{ secrets.EC2_INSTANCE_ID }}" \
-            --region ${{ env.AWS_REGION }}
+            --region ${{ env.AWS_REGION }} || true # Avoid exiting early if the command fails, we want to fetch logss
 
           # 3. Fetch the final status and execution output
           OUTPUT=$(aws ssm get-command-invocation \
