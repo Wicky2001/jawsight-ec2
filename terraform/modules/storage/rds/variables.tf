@@ -11,6 +11,12 @@ variable "db_instance_class" {
 }
 
 
+variable "db_name" {
+  description = "Database name for RDS instance"
+  type        = string
+  default     = "postgres"
+}
+
 variable "db_username" {
   description = "Master username for RDS instance"
   type        = string

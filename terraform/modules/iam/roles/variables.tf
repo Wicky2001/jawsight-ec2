@@ -10,8 +10,14 @@ variable "environment" {
   default     = "dev"
 }
 
-variable "s3_bucket_arn" {
+variable "data_s3_bucket_arn" {
   description = "ARN of data bucket"
+  type        = string
+  default     = ""
+}
+
+variable "artifacts_s3_bucket_arn"{
+  description = "ARN of deployment artifacts bucket"
   type        = string
   default     = ""
 }
@@ -28,8 +34,20 @@ variable "sns_topic_arn" {
   default     = ""
 }
 
-variable "ecr_repository_arn" {
+variable "lambda_repository_arn" {
   description = "ARN of ecr repository for lambda images"
+  type        = string
+  default     = ""
+}
+
+variable "frontend_repository_arn" {
+  description = "ARN of ecr repository for frontend images"
+  type        = string
+  default     = ""
+}
+
+variable "backend_repository_arn" {
+  description = "ARN of ecr repository for backend images"
   type        = string
   default     = ""
 }

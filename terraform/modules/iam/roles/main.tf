@@ -29,8 +29,7 @@ resource "aws_iam_policy" "lambda_policy" {
           "s3:PutObject"
         ]
         Resource = [
-          "${var.s3_bucket_arn}/*",
-          var.s3_bucket_arn
+          "${var.data_s3_bucket_arn}/*",
         ]
       },
       {
@@ -38,7 +37,7 @@ resource "aws_iam_policy" "lambda_policy" {
         "Action" : [
           "s3:ListBucket"
         ],
-        "Resource" : "${var.s3_bucket_arn}"
+        "Resource" : "${var.data_s3_bucket_arn}"
       },
       {
         Effect = "Allow"
@@ -74,14 +73,17 @@ resource "aws_iam_policy" "lambda_policy" {
           "ecr:BatchGetImage",
           "ecr:GetDownloadUrlForLayer"
         ]
-        Resource = ["*"]
+        Resource = [
+          var.lambda_repository_arn,
+        
+        ]
       },
       {
         "Effect" : "Allow",
         "Action" : [
           "ecr:GetAuthorizationToken"
         ],
-        "Resource" : "${var.ecr_repository_arn}"
+        "Resource" : "${var.lambda_repository_arn}"
       }
     ]
   })
@@ -126,7 +128,6 @@ resource "aws_iam_policy" "jawsight_app_policy" {
   policy = jsonencode({
     Version = "2012-10-17"
     Statement = [
-      # CloudWatch Logs for application logging
       {
         Sid      = "CloudWatchLogsAccess"
         Effect   = "Allow"
@@ -137,15 +138,21 @@ resource "aws_iam_policy" "jawsight_app_policy" {
         ]
         Resource = "arn:aws:logs:*:*:*"
       },
-      # S3 Access (Read/Write to project buckets)
       {
         Sid      = "S3JawsightAccess"
         Effect   = "Allow"
         Action   = "s3:*"
-        Resource = "${var.s3_bucket_arn}",
-          
+        Resource = var.data_s3_bucket_arn
       },
-      # SQS Access (Strictly limited to PUSH / Write operations)
+
+      {
+        Sid = "S3JawssightArtifcatsGetAccess",
+        Effect = "Allow",
+        Action = [
+          "s3:GetObject",
+        ],
+        Resource = "${var.artifacts_s3_bucket_arn}/*"
+      },
       {
         Sid      = "SQSJawsightPushOnly"
         Effect   = "Allow"
@@ -156,7 +163,6 @@ resource "aws_iam_policy" "jawsight_app_policy" {
         ]
         Resource = "${var.image_processing_queue_arn}"
       },
-      # ECR Access (Allows the EC2 instance to pull images during CI/CD deploy)
       {
         Sid      = "ECRJawsightPullAccess"
         Effect   = "Allow"
@@ -165,9 +171,11 @@ resource "aws_iam_policy" "jawsight_app_policy" {
           "ecr:BatchGetImage",
           "ecr:GetDownloadUrlForLayer"
         ]
-        Resource = "${var.ecr_repository_arn}"
+        Resource = [
+          var.frontend_repository_arn,
+          var.backend_repository_arn
+        ]
       },
-      # ECR Authentication Token (Required globally by AWS to execute 'docker login')
       {
         Sid      = "ECRAuthToken"
         Effect   = "Allow"
@@ -178,7 +186,7 @@ resource "aws_iam_policy" "jawsight_app_policy" {
   })
 }
 
-# 3. Attach the minimal policy to the role
+#  Attach the minimal policy to the role
 resource "aws_iam_role_policy_attachment" "jawsight_policy_attach" {
   role       = aws_iam_role.jawsight_ec2_role.name
   policy_arn = aws_iam_policy.jawsight_app_policy.arn
@@ -189,7 +197,7 @@ resource "aws_iam_role_policy_attachment" "jawsight_xray_attach" {
   policy_arn = "arn:aws:iam::aws:policy/AWSXRayDaemonWriteAccess"
 }
 
-# 4. Attach SSM Core for secure browser-based terminal access
+# Attach SSM Core for secure browser-based terminal access
 resource "aws_iam_role_policy_attachment" "ssm_core_attach" {
   role       = aws_iam_role.jawsight_ec2_role.name
   policy_arn = "arn:aws:iam::aws:policy/AmazonSSMManagedInstanceCore"

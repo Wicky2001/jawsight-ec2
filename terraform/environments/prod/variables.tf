@@ -7,7 +7,7 @@ variable "aws_region" {
 variable "aws_profile" {
   description = "AWS CLI profile to use for deployment"
   type        = string
-  default     = "jawsight-terraform"
+  default     = "jawsight-dev-terraform"
 }
 
 variable "project_name" {
@@ -26,7 +26,7 @@ variable "environment" {
 variable "instance_type" {
   description = "EC2 instance type"
   type        = string
-  default     = "t3.large"
+  default     = "t3.small"
 }
 
 variable "acm_certificate_arn" {
@@ -77,8 +77,20 @@ variable "db_password" {
   sensitive   = true
 }
 
+variable "db_name" {
+  description = "Database name for the RDS instance"
+  type        = string
+  default     = "postgres"
+}
+
 variable "public_key_openssh" {
   description = "Public key in OpenSSH format for EC2 key pair"
   type        = string
   sensitive   = true
+}
+
+variable "db_instance_class" {
+  description = "RDS instance class"
+  type        = string
+  default     = "db.t3.micro"
 }

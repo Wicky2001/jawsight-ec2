@@ -5,21 +5,14 @@ resource "aws_security_group" "ec2_sg" {
   vpc_id      = var.vpc_id
 
   ingress {
-    description = "HTTP from VPC (NLB)"
+    description = "Allow HTTPS from NLB to the NGINX server"
     from_port   = 80
     to_port     = 80
     protocol    = "tcp"
     cidr_blocks = [var.vpc_cidr]
   }
 
-  ingress{
-    description = "SSH from anywhere"
-    from_port = 22
-    to_port = 22
-    protocol = "tcp"
-    cidr_blocks = ["0.0.0.0/0"]
 
-  }
 
   egress {
     from_port   = 0

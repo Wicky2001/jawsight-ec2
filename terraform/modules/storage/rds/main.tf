@@ -7,16 +7,15 @@ resource "aws_db_subnet_group" "rds_subnet_group" {
 resource "aws_db_instance" "postgres" {
   identifier             = "${var.project_name}-${var.environment}-db"
   engine                 = "postgres"
-  engine_version         = "16.1"
   instance_class         = var.db_instance_class
   allocated_storage      = 20
-  db_name                = "${var.project_name}_${var.environment}_db"
+  db_name                = var.db_name
   username               = var.db_username
-  password               = var.db_password # Pass via tfvars or AWS Secrets Manager
+  password               = var.db_password 
   db_subnet_group_name   = aws_db_subnet_group.rds_subnet_group.name
   vpc_security_group_ids = [var.rds_sg_id]
-  skip_final_snapshot    = true # Set to false in Production!
-  publicly_accessible    = false
+  skip_final_snapshot       = var.environment != "production"
+  final_snapshot_identifier = var.environment == "production" ? "${var.project_name}-${var.environment}-final-snap-01" : null
 
   tags = { Name = "${var.project_name}-${var.environment}-db" }
 }

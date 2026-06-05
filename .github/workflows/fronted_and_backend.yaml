@@ -6,13 +6,15 @@ on:
       - main
 
 env:
-  AWS_REGION: us-east-1
-  ECR_BACKEND_REPO: jawsight-backend
-  ECR_FRONTEND_REPO: jawsight-frontend
+  AWS_REGION: ap-south-1
+  ECR_BACKEND_REPO: jawsight-production-backend
+  ECR_FRONTEND_REPO: jawsight-production-frontend
 
 jobs:
   deploy:
     runs-on: ubuntu-latest
+    environment:
+      name: production
     steps:
       - name: Checkout Source Code
         uses: actions/checkout@v4
@@ -63,30 +65,35 @@ jobs:
             -t $ECR_REGISTRY/${{ env.ECR_FRONTEND_REPO }}:latest -f frontend/Dockerfile .
           docker push $ECR_REGISTRY/${{ env.ECR_FRONTEND_REPO }}:latest
 
-      # 4. Copy files ONLY if infrastructure files changed
-      - name: Copy deployment files to EC2
-        if: steps.changes.outputs.infra == 'true'
-        uses: appleboy/scp-action@master
-        with:
-          host: ${{ secrets.EC2_HOST }}
-          username: ${{ secrets.EC2_USER }}
-          key: ${{ secrets.EC2_SSH_KEY }}
-          source: "docker-compose.prod.yml,nginx.conf"
-          target: "~/app"
+      # 4. Upload files to S3 (The secure middleman for Private Subnets)
+      - name: Prepare and Upload files to S3
+        run: |
+          # 1. Create the .env file locally on the GitHub Runner
+          echo "${{ secrets.BACKEND_PROD_ENV }}" > .env
 
-      # 5. Always run the deployment script
-      - name: Execute Deployment Commands via SSH
-        uses: appleboy/ssh-action@master
-        with:
-          host: ${{ secrets.EC2_HOST }}
-          username: ${{ secrets.EC2_USER }}
-          key: ${{ secrets.EC2_SSH_KEY }}
-          script: |
-            cd ~/app
-            aws ecr get-login-password --region ${{ env.AWS_REGION }} | docker login --username AWS --password-stdin ${{ steps.login-ecr.outputs.registry }}
+          # 2. Upload everything to your secure S3 bucket
+          aws s3 cp docker-compose.prod.yml s3://jawsight-deployment-artifacts/
+          aws s3 cp nginx.conf s3://jawsight-deployment-artifacts/
+          aws s3 cp .env s3://jawsight-deployment-artifacts/.env
 
-            # Docker pull will ONLY download the images that were updated with a new 'latest' version
-            docker compose -f docker-compose.prod.yml pull
-
-            # Docker up will ONLY restart the containers whose images actually changed
-            docker compose -f docker-compose.prod.yml up -d
+      # 5. Execute Deployment Commands via AWS SSM
+      - name: Execute Deployment Commands via AWS SSM
+        run: |
+          aws ssm send-command \
+            --instance-ids "${{ secrets.EC2_INSTANCE_ID }}" \
+            --document-name "AWS-RunShellScript" \
+            --parameters 'commands=[
+              "mkdir -p ~/app",
+              "cd ~/app",
+              
+              "# Download the fresh files from S3",
+              "aws s3 cp s3://jawsight-deployment-artifacts/docker-compose.prod.yml .",
+              "aws s3 cp s3://jawsight-deployment-artifacts/nginx.conf .",
+              "aws s3 cp s3://jawsight-deployment-artifacts/.env .",
+              
+              "# Authenticate with ECR and restart containers",
+              "aws ecr get-login-password --region ${{ env.AWS_REGION }} | docker login --username AWS --password-stdin ${{ steps.login-ecr.outputs.registry }}",
+              "docker compose -f docker-compose.prod.yml pull",
+              "docker compose -f docker-compose.prod.yml up -d"
+            ]' \
+            --region ${{ env.AWS_REGION }}

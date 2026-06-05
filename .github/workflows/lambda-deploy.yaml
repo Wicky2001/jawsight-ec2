@@ -17,6 +17,9 @@ jobs:
   deploy:
     runs-on: ubuntu-latest
 
+    environment:
+      name: production
+
     steps:
       # 1. Checkout repo
       - name: Checkout repository
