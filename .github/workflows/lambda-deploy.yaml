@@ -14,7 +14,7 @@ env:
   LAMBDA_FUNCTION_NAME: ${{ vars.LAMBDA_FUNCTION_NAME }} #jawsight-image-processing-lambda
 
 jobs:
-  deploy:
+  deploy-to-lambda:
     runs-on: ubuntu-latest
 
     environment:
