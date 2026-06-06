@@ -24,31 +24,31 @@ module "security_groups" {
   source       = "../../modules/networking/security-groups"
   project_name = var.project_name
   environment  = var.environment
-  vpc_id      = module.vpc.vpc_id
-  vpc_cidr    = module.vpc.vpc_cidr
+  vpc_id       = module.vpc.vpc_id
+  vpc_cidr     = module.vpc.vpc_cidr
 }
 
 
 module "ec2" {
-    source       = "../../modules/compute/ec2"
-    project_name = var.project_name
-    vpc_id       = module.vpc.vpc_id
-    private_subnet_id = module.vpc.private_subnet_1_id
-    security_group_id = module.security_groups.ec2_security_group_id
-    instance_type = var.instance_type
-    environment  = var.environment
-    instance_profile_name = module.iam.ec2_instance_profile_name
-    public_key_openssh = var.public_key_openssh
+  source                = "../../modules/compute/ec2"
+  project_name          = var.project_name
+  vpc_id                = module.vpc.vpc_id
+  private_subnet_id     = module.vpc.private_subnet_1_id
+  security_group_id     = module.security_groups.ec2_security_group_id
+  instance_type         = var.instance_type
+  environment           = var.environment
+  instance_profile_name = module.iam.ec2_instance_profile_name
+  public_key_openssh    = var.public_key_openssh
 }
 
 module "nlb" {
-    source       = "../../modules/networking/nlb"
-    project_name = var.project_name
-    environment  = var.environment
-    vpc_id       = module.vpc.vpc_id
-    public_subnet_id = module.vpc.public_subnet_id
-    acm_certificate_arn = var.acm_certificate_arn
-    ec2_instance_id = module.ec2.app_server_id
+  source              = "../../modules/networking/nlb"
+  project_name        = var.project_name
+  environment         = var.environment
+  vpc_id              = module.vpc.vpc_id
+  public_subnet_id    = module.vpc.public_subnet_id
+  acm_certificate_arn = var.acm_certificate_arn
+  ec2_instance_id     = module.ec2.app_server_id
 }
 
 module "rds" {
@@ -106,6 +106,20 @@ module "iam" {
   backend_repository_arn     = module.ecr.backend_repository_arn
   migrations_repository_arn  = module.ecr.migrations_repository_arn
   sns_topic_arn              = module.sns.topic_arn
+}
+
+module "iam_user" {
+  source                          = "../../modules/iam/users"
+  project_name                    = var.project_name
+  environment                     = var.environment
+  deployment_artifacts_bucket_arn = module.s3.deployment_artifacts_s3_bucket_arn
+  ecr_repository_arns = [
+    module.ecr.lambda_repository_arn,
+    module.ecr.backend_repository_arn,
+    module.ecr.frontend_repository_arn,
+    module.ecr.migrations_repository_arn,
+  ]
+  lambda_function_arn = module.lambda.lambda_arn
 }
 
 module "lambda" {
