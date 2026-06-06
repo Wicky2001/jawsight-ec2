@@ -130,7 +130,7 @@ const InferenceHistoryDetailView = () => {
         ) : signUrls ? (
           <div className="flex flex-col  justify-around gap-3 lg:gap-2 xl:gap-8 w-full h-full">
             {/* Images Grid */}
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            <div className="flex md:flex-row md:items-center md:justify-around flex-col gap-3">
               <ImageCard
                 title="Left Profile"
                 url={signUrls.left_sign_image_url}
@@ -156,7 +156,7 @@ const InferenceHistoryDetailView = () => {
                   <h4 className="font-bold text-amber-900 text-lg mb-1">
                     Temporary Secure Access
                   </h4>
-                  <p className="text-amber-800 text-sm leading-relaxed max-w-3xl">
+                  <p className="text-amber-800 text-sm leading-relaxed w-full">
                     <strong>Note:</strong> We apply extra security steps to
                     protect patient privacy, hence these images are only
                     available for <strong>30 minutes</strong>. If the images

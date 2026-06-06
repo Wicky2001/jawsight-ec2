@@ -7,7 +7,7 @@ const LoadingScreen = () => {
       className="min-h-screen flex flex-col items-center justify-center p-4"
       style={{ backgroundColor: "var(--color-bg-app)" }}
     >
-      <div className="flex flex-col items-center max-w-sm w-full animate-in fade-in duration-700">
+      <div className="flex flex-col items-center w-full animate-in fade-in duration-700">
         {/* Animated Icon Container */}
         <div className="relative flex items-center justify-center mb-8">
           {/* Outer expanding ring with brand glow */}

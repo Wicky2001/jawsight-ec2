@@ -243,7 +243,7 @@ export const LandmarkModal: React.FC<LandmarkModalProps> = ({
   return (
     <div className="fixed inset-0 z-50 modal-overlay backdrop-blur-sm flex items-center justify-center p-6">
       <div
-        className="landmark-modal-panel rounded-2xl flex flex-col w-full max-w-5xl h-[90vh] overflow-hidden"
+        className="landmark-modal-panel rounded-2xl flex flex-col w-full h-[90vh] overflow-hidden"
         aria-modal="true"
         role="dialog"
       >
@@ -305,7 +305,7 @@ export const LandmarkModal: React.FC<LandmarkModalProps> = ({
               src={imageSrc}
               alt="Front Face"
               onLoad={handleImageLoad}
-              className="max-h-[70vh] max-w-full object-contain pointer-events-none block rounded-sm"
+              className="max-h-[70vh] w-full object-contain pointer-events-none block rounded-sm"
               draggable={false}
             />
             {points.map((p) => (

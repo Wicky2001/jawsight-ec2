@@ -31,7 +31,7 @@ const NoDataFoundBanner = ({
         {title}
       </h3>
       <p
-        className={`${compact ? "max-w-lg text-xs" : "max-w-xl text-sm"} leading-relaxed text-slate-500`}
+        className={`${compact ? "w-full text-xs" : "w-full text-sm"} leading-relaxed text-slate-500`}
       >
         {description}
       </p>

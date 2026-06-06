@@ -39,7 +39,7 @@ const ImageCard = ({ title, url, isLoading = false }: ImageCardProps) => {
             <img
               src={url}
               alt={title}
-              className="max-w-full max-h-full w-auto h-auto object-contain"
+              className="w-full max-h-full object-contain"
               onError={() => setImageError(true)}
             />
           ) : null}

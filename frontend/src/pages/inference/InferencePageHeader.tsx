@@ -32,7 +32,7 @@ const PageHeader = ({
           <h1 className="text-xl font-bold text-slate-900 tracking-tight leading-tight">
             New Patient Inference
           </h1>
-          <div className="text-slate-500 text-sm mt-1 font-medium leading-relaxed max-w-2xl">
+          <div className="text-slate-500 text-sm mt-1 font-medium leading-relaxed w-full">
             Upload side and front patient profiles to generate predictive
             mandibular outcomes.
           </div>

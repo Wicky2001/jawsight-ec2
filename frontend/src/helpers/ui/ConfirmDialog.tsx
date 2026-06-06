@@ -34,7 +34,7 @@ const ConfirmDialog = ({
         aria-modal="true"
         aria-labelledby="confirm-dialog-title"
         aria-describedby="confirm-dialog-message"
-        className="w-full max-w-md rounded-2xl border border-slate-200 bg-white p-6 shadow-2xl"
+        className="w-full rounded-2xl border border-slate-200 bg-white p-6 shadow-2xl"
         onMouseDown={(event) => event.stopPropagation()}
       >
         <h2

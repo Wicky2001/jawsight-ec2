@@ -183,7 +183,7 @@ const PatientsDetailView = () => {
                   <h4 className="font-bold text-amber-900 text-lg mb-1">
                     Temporary Secure Access
                   </h4>
-                  <p className="text-amber-800 text-sm leading-relaxed max-w-3xl">
+                  <p className="text-amber-800 text-sm leading-relaxed w-full">
                     <strong>Note:</strong> We apply extra security steps to
                     protect patient privacy, hence these images are only
                     available for <strong>30 minutes</strong>. If the images

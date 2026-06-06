@@ -153,7 +153,7 @@ export const UploadZone: React.FC<UploadZoneProps> = ({
               <img
                 src={imageDataUrl}
                 alt={title}
-                className="max-w-full max-h-full w-auto h-auto object-contain cursor-zoom-in"
+                className="w-full max-h-full object-contain cursor-zoom-in"
                 draggable={false}
               />
             </div>
@@ -198,7 +198,7 @@ export const UploadZone: React.FC<UploadZoneProps> = ({
             <p className="font-semibold text-slate-800 mb-1 bg-white/70 backdrop-blur-md px-3 py-1 rounded-lg">
               Click to upload
             </p>
-            <p className="text-sm text-slate-700 max-w-[200px] font-medium bg-white/70 backdrop-blur-md px-3 py-1 rounded-lg mt-1">
+            <p className="text-sm text-slate-700 w-full font-medium bg-white/70 backdrop-blur-md px-3 py-1 rounded-lg mt-1">
               {subtitle}
             </p>
           </div>

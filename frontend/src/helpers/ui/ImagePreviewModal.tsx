@@ -138,7 +138,7 @@ export const ImagePreviewModal: React.FC<ImagePreviewModalProps> = ({
     >
       <div
         ref={containerRef}
-        className="landmark-modal-panel w-full max-w-6xl h-[90vh] rounded-2xl overflow-hidden flex flex-col"
+        className="landmark-modal-panel w-full h-[90vh] rounded-2xl overflow-hidden flex flex-col"
         onClick={(event) => event.stopPropagation()}
         aria-modal="true"
         role="dialog"

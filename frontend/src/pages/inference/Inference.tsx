@@ -222,7 +222,7 @@ const Inference = () => {
         />
 
         <InnerPageBody>
-          <div className="w-full px-4 sm:px-6 py-6 max-w-4xl mx-auto">
+          <div className="w-full px-4 sm:px-6 py-6">
             {/* Mobile-first: stack columns then switch to row on md+ */}
             <div className="flex flex-col md:flex-row gap-6 mb-6 w-full">
               <div className="w-full md:w-1/2 flex flex-col">

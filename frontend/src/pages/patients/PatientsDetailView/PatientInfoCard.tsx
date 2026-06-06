@@ -43,7 +43,7 @@ const PatientInfoCard = ({ patient }: PatientInfoCardProps) => {
             <p className="text-xs text-slate-500 font-medium uppercase tracking-wider">
               Email
             </p>
-            <p className="text-slate-900 font-semibold break-words max-w-[220px] sm:max-w-[320px]">
+            <p className="text-slate-900 font-semibold break-words w-full">
               {patient.email}
             </p>
           </div>

@@ -77,7 +77,7 @@ const TableEmptyState = ({ title, description }: TableEmptyStateProps) => {
     <div className="flex flex-col items-center justify-center gap-2 px-4 py-4 text-center text-slate-500">
       <Search className="h-9 w-9 text-slate-300" />
       <h3 className="text-sm font-semibold text-slate-700">{title}</h3>
-      <p className="max-w-lg text-xs leading-relaxed text-slate-500">
+      <p className="w-full text-xs leading-relaxed text-slate-500">
         {description}
       </p>
     </div>
@@ -365,7 +365,7 @@ export const Table = <T extends Record<string, any>>({
                   {cols.map((col) => (
                     <td
                       key={`${row.id || idx}-${String(col.field)}`}
-                      className="p-4 text-sm text-primary truncate max-w-xs"
+                      className="p-4 text-sm text-primary truncate w-full"
                     >
                       {renderCellValue(row[col.field], String(col.field))}
                     </td>
@@ -459,7 +459,7 @@ const demoRows = [
 export default function App() {
   return (
     <div className="min-h-screen bg-slate-50 p-6">
-      <div className="mx-auto flex h-[80vh] max-w-5xl flex-col">
+      <div className="flex h-[80vh] w-full flex-col">
         <Table
           cols={demoColumns}
           rows={demoRows}

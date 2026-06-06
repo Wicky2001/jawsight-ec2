@@ -9,6 +9,7 @@ import Patients from "./pages/patients/Patients";
 import PatientsDetailView from "./pages/patients/PatientsDetailView/PatientsDetailView";
 import Home from "./pages/home/Home";
 import Login from "./pages/login/Login";
+import NotFound from "./pages/notfound/NotFound";
 import ProtectedRoute from "./helpers/ProtectedRoute";
 import Navbar from "./helpers/ui/NavBar";
 
@@ -36,6 +37,7 @@ function App() {
             />
             <Route path="/patients" element={<Patients />} />
           </Route>
+          <Route path="*" element={<NotFound />} />
         </Routes>
       </main>
 

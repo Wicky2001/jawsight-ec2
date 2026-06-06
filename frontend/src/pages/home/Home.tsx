@@ -16,14 +16,14 @@ const Home = () => {
       <div className="min-h-screen bg-slate-50 font-sans text-slate-900 overflow-x-hidden relative">
         <main className="pb-16">
           {/* Hero Section */}
-          <section className="relative max-w-7xl mx-auto px-6 pt-12 pb-24 lg:pt-20 lg:pb-32 flex flex-col lg:flex-row items-center gap-12 z-10">
+          <section className="relative w-full px-6 pt-12 pb-24 lg:pt-20 lg:pb-32 flex flex-col lg:flex-row items-center gap-12 z-10">
             <div className="flex-1 text-center lg:text-left">
               <h1 className="text-5xl lg:text-6xl font-extrabold tracking-tight text-slate-900 mb-6 leading-[1.15]">
                 Predictive Surgical <br className="hidden lg:block" />
                 Outcomes with{" "}
                 <span className="text-teal-600">Precision AI</span>
               </h1>
-              <p className="text-lg lg:text-xl text-slate-500 mb-8 max-w-2xl mx-auto lg:mx-0">
+              <p className="text-lg lg:text-xl text-slate-500 mb-8 w-full mx-auto lg:mx-0">
                 Empower your orthognathic planning. Upload patient profiles, map
                 clinical landmarks, and generate highly accurate post-operative
                 mandibular predictions in seconds.
@@ -40,7 +40,7 @@ const Home = () => {
             </div>
 
             {/* Hero Visual - Minimalist UI Representation */}
-            <div className="flex-1 w-full max-w-lg lg:max-w-none relative">
+            <div className="flex-1 w-full relative">
               <div className="relative bg-white p-2 rounded-[2.5rem] shadow-sm border border-slate-200">
                 <div className="bg-slate-900 rounded-[2rem] overflow-hidden p-6 aspect-[4/3] flex flex-col justify-between relative border border-slate-800">
                   <div className="flex justify-between items-center text-slate-400 mb-4 z-10">
@@ -64,12 +64,12 @@ const Home = () => {
             id="features"
             className="py-20 bg-white border-y border-slate-200"
           >
-            <div className="max-w-7xl mx-auto px-6">
+            <div className="w-full px-6">
               <div className="text-center mb-16">
                 <h2 className="text-3xl font-bold text-slate-900 mb-4">
                   Built for Clinical Excellence
                 </h2>
-                <p className="text-slate-500 max-w-2xl mx-auto text-lg">
+                <p className="text-slate-500 w-full mx-auto text-lg">
                   Our inference engine combines cutting-edge computer vision
                   with medical-grade security.
                 </p>
@@ -113,12 +113,12 @@ const Home = () => {
           </section>
 
           {/* How it Works */}
-          <section id="how-it-works" className="py-24 max-w-7xl mx-auto px-6">
+          <section id="how-it-works" className="py-24 w-full px-6">
             <div className="text-center mb-16">
               <h2 className="text-3xl font-bold text-slate-900 mb-4">
                 Seamless Workflow
               </h2>
-              <p className="text-slate-500 max-w-2xl mx-auto text-lg">
+              <p className="text-slate-500 w-full mx-auto text-lg">
                 From upload to prediction in three simple steps.
               </p>
             </div>
@@ -169,7 +169,7 @@ const Home = () => {
 
         {/* Minimal Footer */}
         <footer className="bg-slate-50 py-12 border-t border-slate-200">
-          <div className="max-w-7xl mx-auto px-6 flex flex-col md:flex-row items-center justify-between gap-6">
+          <div className="w-full px-6 flex flex-col md:flex-row items-center justify-between gap-6">
             <div className="flex items-center gap-2 text-slate-900">
               <Activity className="w-5 h-5 text-teal-600" />
               <span className="text-lg font-bold tracking-tight">JawSight</span>
