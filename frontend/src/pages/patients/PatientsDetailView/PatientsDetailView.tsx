@@ -158,7 +158,7 @@ const PatientsDetailView = () => {
                     </h3>
                   </div>
 
-                  <div className="flex flex-row justify-around gap-3 lg:gap-2 xl:gap-8 w-full h-full">
+                  <div className="flex flex-col md:flex-row justify-around gap-3 lg:gap-2 xl:gap-8 w-full h-full">
                     <ImageCard
                       title="Left Profile"
                       url={iteration.left_sign_image_url}

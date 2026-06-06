@@ -7,5 +7,4 @@ variable "topic_arn" {
 variable "webhook_url" {
   description = "HTTPS Webhook URL"
   type        = string
-  default     = "https://example.com/webhook"
 }

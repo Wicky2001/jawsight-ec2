@@ -15,7 +15,7 @@ const TextInputField = ({
   required,
   error,
   helperText,
-  inputClassName,
+  inputClassName = "w-full themed-input input-focus py-2 px-3 rounded-lg text-sm",
   onChange,
   ...inputProps
 }: TextInputFieldProps) => {

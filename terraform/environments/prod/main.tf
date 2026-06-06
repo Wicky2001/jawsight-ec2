@@ -82,11 +82,11 @@ module "sns" {
   environment  = var.environment
 }
 
-# module "sns_subscription" {
-#   source      = "../../modules/messaging/subscriptions"
-#   topic_arn   = module.sns.topic_arn
-#   webhook_url = var.webhook_url
-# }
+module "sns_subscription" {
+  source      = "../../modules/messaging/subscriptions"
+  topic_arn   = module.sns.topic_arn
+  webhook_url = var.webhook_url
+}
 
 module "ecr" {
   source       = "../../modules/storage/ecr"

@@ -178,14 +178,17 @@ const Inference = () => {
       setPhase("processing");
 
       clearProcessingTimeout();
-      processingTimeoutRef.current = window.setTimeout(() => {
-        setIsSubmitting(false);
-        setIsProcessing(false);
-        setPhase("idle");
-        toastHelper.error(
-          "Inference is taking too long. Please try submitting again.",
-        );
-      }, 15 * 60 * 1000);
+      processingTimeoutRef.current = window.setTimeout(
+        () => {
+          setIsSubmitting(false);
+          setIsProcessing(false);
+          setPhase("idle");
+          toastHelper.error(
+            "Inference is taking too long. Please try submitting again.",
+          );
+        },
+        15 * 60 * 1000,
+      );
     } catch (error: any) {
       console.error("Submission failed:", error);
       clearProcessingTimeout();
@@ -219,10 +222,10 @@ const Inference = () => {
         />
 
         <InnerPageBody>
-          <div className="w-full mx-auto px-6 py-8">
-            {/* Removed flex-1 and min-h-0 so the grid expands naturally based on its content */}
-            <div className="flex md:flex-row gap-6 mb-6 w-full">
-              <div className="lg:col-span-6 flex flex-col">
+          <div className="w-full px-4 sm:px-6 py-6 max-w-4xl mx-auto">
+            {/* Mobile-first: stack columns then switch to row on md+ */}
+            <div className="flex flex-col md:flex-row gap-6 mb-6 w-full">
+              <div className="w-full md:w-1/2 flex flex-col">
                 {/* Removed overflow-y-auto to stop inner scrolling. Added h-full to match the right card's height */}
                 <div className="bg-white p-6 rounded-2xl shadow-sm border border-slate-200 flex flex-col h-full">
                   <h2 className="text-xl font-semibold mb-6 flex items-center gap-2 shrink-0">
@@ -282,7 +285,7 @@ const Inference = () => {
                 </div>
               </div>
 
-              <div className="lg:col-span-6 flex flex-col">
+              <div className="w-full md:w-1/2 flex flex-col">
                 {/* Removed overflow-y-auto. Added h-full */}
                 <div className="bg-white p-6 rounded-2xl shadow-sm border border-slate-200 flex flex-col h-full">
                   <h2 className="text-xl font-semibold mb-6 flex items-center gap-2 shrink-0">
@@ -361,7 +364,7 @@ const Inference = () => {
                   (!isReadyToSubmit || isSubmitting || isProcessing)
                 }
                 onClick={phase === "completed" ? resetInference : handleSubmit}
-                className={`px-8 py-3 rounded-xl font-semibold flex items-center justify-center gap-2 text-white transition-all duration-200 shadow-sm min-w-[220px] ${
+                className={`w-full md:w-auto px-6 py-3 rounded-xl font-semibold flex items-center justify-center gap-2 text-white transition-all duration-200 shadow-sm min-w-0 md:min-w-[220px] ${
                   phase === "completed"
                     ? "bg-teal-600 hover:bg-teal-700 hover:shadow-md active:scale-95 cursor-pointer"
                     : !isReadyToSubmit || isSubmitting || isProcessing

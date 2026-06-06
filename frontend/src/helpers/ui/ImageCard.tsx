@@ -15,7 +15,7 @@ const ImageCard = ({ title, url, isLoading = false }: ImageCardProps) => {
 
   return (
     <>
-      <div className="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden flex flex-col w-[300px] h-[500px] 2xl:h-[600px] 2xl:w-[1000px] cursor-zoom-in">
+      <div className="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden flex flex-col w-full md:w-[300px] h-auto md:h-[500px] 2xl:h-[600px] cursor-zoom-in">
         <div className="p-4 border-b border-slate-100 bg-slate-50 flex items-center justify-between">
           <h3 className="font-semibold text-slate-700 flex items-center gap-2">
             <ImageIcon className="w-4 h-4 text-teal-600" />
@@ -39,7 +39,7 @@ const ImageCard = ({ title, url, isLoading = false }: ImageCardProps) => {
             <img
               src={url}
               alt={title}
-              className="w-full h-full object-contain"
+              className="max-w-full max-h-full w-auto h-auto object-contain"
               onError={() => setImageError(true)}
             />
           ) : null}

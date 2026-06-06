@@ -124,7 +124,14 @@ resource "aws_iam_policy" "jawsight_app_policy" {
         Sid      = "S3JawsightAccess"
         Effect   = "Allow"
         Action   = "s3:*"
-        Resource = var.data_s3_bucket_arn
+        Resource = "${var.data_s3_bucket_arn}/*"
+      },
+
+        {
+        Sid      = "S3JawsightListBucketAccess"
+        Effect   = "Allow"
+        Action   = "s3:ListBucket"
+        Resource = "${var.data_s3_bucket_arn}"
       },
 
       {

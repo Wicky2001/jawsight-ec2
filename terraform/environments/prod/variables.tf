@@ -56,7 +56,7 @@ variable "lambda_memory" {
 variable "webhook_url" {
   description = "Webhook URL for SNS notifications"
   type        = string
-  default     = "https://www.jawsight.com/api/inference/sns-webhook"
+  default     = "https://www.jawsight.online/api/inference/sns-webhook"
 }
 
 variable "image_uri" {

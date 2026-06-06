@@ -6,9 +6,9 @@ locals {
   user_name   = "${var.project_name}-${var.environment}-githubAction-user"
   policy_name = "${var.project_name}-${var.environment}-githubActionUser-policy"
 
-  ssm_document_arn = "arn:aws:ssm:${data.aws_region.current.name}:*:document/AWS-*"
-  ssm_instance_arn = "arn:aws:ec2:${data.aws_region.current.name}:${data.aws_caller_identity.current.account_id}:instance/*"
-  ssm_command_arn  = "arn:aws:ssm:${data.aws_region.current.name}:${data.aws_caller_identity.current.account_id}:*"
+  ssm_document_arn = "arn:aws:ssm:${data.aws_region.current.id}:*:document/AWS-*"
+  ssm_instance_arn = "arn:aws:ec2:${data.aws_region.current.id}:${data.aws_caller_identity.current.account_id}:instance/*"
+  ssm_command_arn  = "arn:aws:ssm:${data.aws_region.current.id}:${data.aws_caller_identity.current.account_id}:*"
 }
 
 resource "aws_iam_user" "this" {

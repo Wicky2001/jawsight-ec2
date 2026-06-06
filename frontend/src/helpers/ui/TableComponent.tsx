@@ -243,7 +243,7 @@ export const Table = <T extends Record<string, any>>({
   return (
     <div className="flex flex-col h-full min-h-0 w-full surface-card border border-primary rounded-xl overflow-hidden card-shadow">
       {/* Toolbar */}
-      <div className="flex flex-row sm:flex-row items-center justify-between p-4 gap-4 border-b border-primary bg-page shrink-0">
+      <div className="flex flex-col sm:flex-row items-center justify-between p-4 gap-4 border-b border-primary bg-page shrink-0">
         {showAdd && (
           <Button
             className="btn-primary inline-flex items-center gap-2 rounded-md px-3 py-1.5 text-sm font-semibold"
@@ -253,7 +253,7 @@ export const Table = <T extends Record<string, any>>({
             Add
           </Button>
         )}
-        <div className="relative lg:w-1/2">
+        <div className="relative w-full sm:w-1/2">
           <Search
             className="absolute left-3 top-1/2 -translate-y-1/2 text-secondary"
             size={18}
@@ -288,7 +288,7 @@ export const Table = <T extends Record<string, any>>({
         onScroll={handleScroll}
         className="flex-1 min-h-0 overflow-x-auto overflow-y-auto relative scrollbar-thin scrollbar-thumb-slate-300 scrollbar-track-slate-100"
       >
-        <table className="w-full text-left border-collapse min-w-[600px]">
+        <table className="w-full text-left border-collapse min-w-full md:min-w-[600px]">
           <thead className="sticky top-0 z-30">
             <tr className="table-header-bg">
               {cols.map((col) => (

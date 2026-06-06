@@ -19,7 +19,7 @@ export const PageWrapper = ({ children }: PageWrapperProps) => {
 
 export const PageContent = ({ children }: PageWrapperProps) => {
   return (
-    <div className="mx-auto w-full px-6 py-8 flex flex-col flex-1 min-h-0">
+    <div className="w-full px-4 sm:px-6 py-6 flex flex-col flex-1 min-h-0">
       {children}
     </div>
   );
@@ -32,7 +32,7 @@ export const PageContent = ({ children }: PageWrapperProps) => {
 
 export const InnerPageWrapper = ({ children }: PageWrapperProps) => {
   return (
-    <div className="h-full w-full bg-slate-50 flex flex-col mx-auto overflow-hidden px-6 py-8">
+    <div className="h-full w-full bg-slate-50 flex flex-col overflow-hidden px-4 sm:px-6 py-6">
       {children}
     </div>
   );
