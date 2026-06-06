@@ -1,4 +1,11 @@
 services:
+  xray-daemon:
+    image: amazon/aws-xray-daemon
+    container_name: xray-daemon
+    restart: unless-stopped
+    ports:
+      - "2000:2000/udp"
+
   redis:
     image: redis:alpine
     container_name: redis
@@ -16,6 +23,7 @@ services:
       - .env
     environment:
       REDIS_URL: redis://redis:6379
+      AWS_XRAY_DAEMON_ADDRESS: xray-daemon:2000
 
   frontend:
     # REPLACE with your actual AWS Account ID and Region

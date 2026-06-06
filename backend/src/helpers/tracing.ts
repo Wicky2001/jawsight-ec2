@@ -11,6 +11,8 @@ if (tracingEnabled) {
     AWSXRay.setDaemonAddress(process.env.AWS_XRAY_DAEMON_ADDRESS);
   }
 
+  AWSXRay.config([AWSXRay.plugins.EC2Plugin]);
+
   AWSXRay.captureHTTPsGlobal(http);
   AWSXRay.captureHTTPsGlobal(https);
 }

@@ -109,7 +109,7 @@ export const snsWebhookController = async (req: Request, res: Response) => {
         });
       }
     } catch (innerError) {
-      // Silently fail if unable to notify doctor
+      console.error("Error handling SNS webhook error response:", innerError);
     }
   }
 };
