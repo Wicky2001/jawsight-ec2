@@ -60,8 +60,6 @@ services:
         VITE_XRAY_ENABLED: "false"
     container_name: jawsight_frontend
     restart: unless-stopped
-    env_file:
-      - ./frontend/.env
     depends_on:
       backend:
         condition: service_started

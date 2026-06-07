@@ -32,7 +32,6 @@ RUN npm run build --workspace=frontend
 
 FROM nginxinc/nginx-unprivileged:${NGINX_VERSION} AS production
 
-WORKDIR /app
 
 COPY frontend/nginx.conf /etc/nginx/nginx.conf
 
