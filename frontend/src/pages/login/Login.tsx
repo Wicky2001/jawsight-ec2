@@ -63,7 +63,7 @@ const Login = () => {
         <div className="absolute top-[-10%] left-[-10%] w-[40%] h-[40%] rounded-full bg-teal-400/10 blur-[100px] pointer-events-none" />
         <div className="absolute bottom-[-10%] right-[-10%] w-[40%] h-[40%] rounded-full bg-blue-400/10 blur-[100px] pointer-events-none" />
 
-        <div className="w-1/3  relative z-10 animate-in fade-in slide-in-from-bottom-4 duration-700">
+        <div className="w-full md:w-1/2 relative z-10 animate-in fade-in slide-in-from-bottom-4 duration-700">
           {/* Brand Header */}
           <div className="flex flex-col items-center mb-8 text-center">
             <div className="w-16 h-16 bg-white rounded-2xl shadow-sm border border-slate-200 flex items-center justify-center mb-6 relative group">
