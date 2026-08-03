@@ -23,7 +23,7 @@ ENV NUMBA_DISABLE_JIT=1
 # Copy function code
 COPY . .
 
-RUN wget https://public-model-storage-915658834610-ap-south-1-an.s3.ap-south-1.amazonaws.com/u2net_human_seg.onnx \
+RUN wget https://jawsight-public-model-storage-473280638005-ap-south-1-an.s3.ap-south-1.amazonaws.com/u2net_human_seg.onnx \
     -O models/u2net_human_seg.onnx
 
 # Set U2NET_HOME so rembg uses the local model

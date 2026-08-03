@@ -46,6 +46,11 @@ output "data_s3_bucket_arn" {
   value       = module.s3.data_s3_bucket_arn
 }
 
+output "public-model-storage-s3-bucket_arn" {
+  description = "value"
+  value       = module.s3.public_model_s3_bucket_arn
+}
+
 output "artifacts_s3_bucket_name" {
   description = "Artifacts Bucket Name"
   value       = module.s3.deployment_artifacts_s3_bucket_name

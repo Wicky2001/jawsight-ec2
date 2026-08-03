@@ -12,8 +12,7 @@ services:
     restart: always
 
   backend:
-    # REPLACE with your actual AWS Account ID and Region
-    image: 915658834610.dkr.ecr.ap-south-1.amazonaws.com/jawsight-production-backend:latest
+    image: __BACKEND_IMAGE__
     container_name: backend
     restart: unless-stopped
     depends_on:
@@ -26,8 +25,7 @@ services:
       AWS_XRAY_DAEMON_ADDRESS: xray-daemon:2000
 
   frontend:
-    # REPLACE with your actual AWS Account ID and Region
-    image: 915658834610.dkr.ecr.ap-south-1.amazonaws.com/jawsight-production-frontend:latest
+    image: __FRONTEND_IMAGE__
     container_name: frontend
     restart: unless-stopped
     env_file:
@@ -37,7 +35,7 @@ services:
         condition: service_started
 
   migrations:
-    image: 915658834610.dkr.ecr.ap-south-1.amazonaws.com/jawsight-production-migrations:latest
+    image: __MIGRATIONS_IMAGE__
     container_name: migrations
     restart: "no"
     env_file:

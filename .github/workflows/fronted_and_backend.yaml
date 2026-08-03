@@ -10,6 +10,7 @@ env:
   ECR_BACKEND_REPO: jawsight-production-backend
   ECR_FRONTEND_REPO: jawsight-production-frontend
   ECR_MIGRATIONS_REPO: jawsight-production-migrations
+  S3_ARTIFACTS_BUCKET: jawsight-deployment-artifacts-473280638005
 
 jobs:
   deploy-to-ec2:
@@ -47,47 +48,82 @@ jobs:
         id: login-ecr
         uses: aws-actions/amazon-ecr-login@v2
 
-      # 2. Build Backend ONLY if backend files changed
+      # 2. Build Backend ONLY if backend files changed — tagged with the commit SHA
       - name: Build and push Backend Image
         if: steps.changes.outputs.backend == 'true'
         env:
           ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
+          IMAGE_TAG: ${{ github.sha }}
         run: |
-          docker build -t $ECR_REGISTRY/${{ env.ECR_BACKEND_REPO }}:latest -f backend/Dockerfile .
-          docker push $ECR_REGISTRY/${{ env.ECR_BACKEND_REPO }}:latest
+          docker build -t $ECR_REGISTRY/${{ env.ECR_BACKEND_REPO }}:$IMAGE_TAG -f backend/Dockerfile .
+          docker push $ECR_REGISTRY/${{ env.ECR_BACKEND_REPO }}:$IMAGE_TAG
 
-      # 3. Build Frontend ONLY if frontend files changed
+      # 3. Build Frontend ONLY if frontend files changed — tagged with the commit SHA
       - name: Build and push Frontend Image
         if: steps.changes.outputs.frontend == 'true'
         env:
           ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
+          IMAGE_TAG: ${{ github.sha }}
         run: |
           docker build \
             --build-arg VITE_API_BASE_URL=https://www.jawsight.online \
             --build-arg VITE_XRAY_ENABLED=false \
-            -t $ECR_REGISTRY/${{ env.ECR_FRONTEND_REPO }}:latest -f frontend/Dockerfile .
-          docker push $ECR_REGISTRY/${{ env.ECR_FRONTEND_REPO }}:latest
+            -t $ECR_REGISTRY/${{ env.ECR_FRONTEND_REPO }}:$IMAGE_TAG -f frontend/Dockerfile .
+          docker push $ECR_REGISTRY/${{ env.ECR_FRONTEND_REPO }}:$IMAGE_TAG
 
+      # 4. Build Migrations ONLY if migration files changed — tagged with the commit SHA
       - name: Build and push Migrations Image
         if: steps.changes.outputs.migrations == 'true'
         env:
           ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
+          IMAGE_TAG: ${{ github.sha }}
         run: |
-          docker build -t $ECR_REGISTRY/${{ env.ECR_MIGRATIONS_REPO }}:latest -f sequelizer/Dockerfile .
-          docker push $ECR_REGISTRY/${{ env.ECR_MIGRATIONS_REPO }}:latest
+          docker build -t $ECR_REGISTRY/${{ env.ECR_MIGRATIONS_REPO }}:$IMAGE_TAG -f sequelizer/Dockerfile .
+          docker push $ECR_REGISTRY/${{ env.ECR_MIGRATIONS_REPO }}:$IMAGE_TAG
 
-      # 4. Upload files to S3 (The secure middleman for Private Subnets)
+      # 5. Fetch previous compose file (if any), patch only changed image(s) with the SHA tag, then prepare for upload
+      - name: Update docker-compose image references
+        env:
+          ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
+          IMAGE_TAG: ${{ github.sha }}
+        run: |
+          # Try to pull the previously deployed compose file; fall back to the repo's template on first run
+          aws s3 cp s3://${{ env.S3_ARTIFACTS_BUCKET }}/docker-compose.prod.yml ./docker-compose.working.yml || cp docker-compose.prod.yml ./docker-compose.working.yml
+
+          if [ "${{ steps.changes.outputs.backend }}" == "true" ]; then
+            sed -i "s|^\(\s*image:\s*\).*jawsight-production-backend:.*|\1$ECR_REGISTRY/${{ env.ECR_BACKEND_REPO }}:$IMAGE_TAG|" docker-compose.working.yml
+            echo "Backend image updated to tag $IMAGE_TAG"
+          fi
+
+          if [ "${{ steps.changes.outputs.frontend }}" == "true" ]; then
+            sed -i "s|^\(\s*image:\s*\).*jawsight-production-frontend:.*|\1$ECR_REGISTRY/${{ env.ECR_FRONTEND_REPO }}:$IMAGE_TAG|" docker-compose.working.yml
+            echo "Frontend image updated to tag $IMAGE_TAG"
+          fi
+
+          if [ "${{ steps.changes.outputs.migrations }}" == "true" ]; then
+            sed -i "s|^\(\s*image:\s*\).*jawsight-production-migrations:.*|\1$ECR_REGISTRY/${{ env.ECR_MIGRATIONS_REPO }}:$IMAGE_TAG|" docker-compose.working.yml
+            echo "Migrations image updated to tag $IMAGE_TAG"
+          fi
+
+          # Handle the fallback template case: resolve any still-unresolved placeholders
+          # (only present on a first-ever deploy where no prior S3 file existed).
+          sed -i "s|__BACKEND_IMAGE__|$ECR_REGISTRY/${{ env.ECR_BACKEND_REPO }}:$IMAGE_TAG|" docker-compose.working.yml
+          sed -i "s|__FRONTEND_IMAGE__|$ECR_REGISTRY/${{ env.ECR_FRONTEND_REPO }}:$IMAGE_TAG|" docker-compose.working.yml
+          sed -i "s|__MIGRATIONS_IMAGE__|$ECR_REGISTRY/${{ env.ECR_MIGRATIONS_REPO }}:$IMAGE_TAG|" docker-compose.working.yml
+
+          echo "=== Final docker-compose.prod.yml to be deployed ==="
+          cat docker-compose.working.yml
+
+      # 6. Upload files to S3 (the secure middleman for private subnets)
       - name: Prepare and Upload files to S3
         run: |
-          # 1. Create the .env file locally on the GitHub Runner
           echo "${{ secrets.BACKEND_PROD_ENV }}" > .env
 
-          # 2. Upload everything to your secure S3 bucket
-          aws s3 cp docker-compose.prod.yml s3://jawsight-deployment-artifacts-473280638005/
-          aws s3 cp nginx.conf s3://jawsight-deployment-artifacts-473280638005/
-          aws s3 cp .env s3://jawsight-deployment-artifacts-473280638005/.env
+          aws s3 cp docker-compose.working.yml s3://${{ env.S3_ARTIFACTS_BUCKET }}/docker-compose.prod.yml
+          aws s3 cp nginx.conf s3://${{ env.S3_ARTIFACTS_BUCKET }}/nginx.conf
+          aws s3 cp .env s3://${{ env.S3_ARTIFACTS_BUCKET }}/.env
 
-      # 5. Execute Deployment Commands via AWS SSM
+      # 7. Execute Deployment Commands via AWS SSM
       - name: Execute Deployment Commands via AWS SSM
         run: |
           # 1. Trigger the command and capture the unique Command ID
@@ -97,12 +133,13 @@ jobs:
             --parameters 'commands=[
               "mkdir -p /home/ec2-user/app",
               "chown -R ec2-user:ec2-user /home/ec2-user/app",
-              "aws s3 cp s3://jawsight-deployment-artifacts-473280638005/docker-compose.prod.yml /home/ec2-user/app/docker-compose.prod.yml",
-              "aws s3 cp s3://jawsight-deployment-artifacts-473280638005/nginx.conf /home/ec2-user/app/nginx.conf",
-              "aws s3 cp s3://jawsight-deployment-artifacts-473280638005/.env /home/ec2-user/app/.env",
+              "aws s3 cp s3://${{ env.S3_ARTIFACTS_BUCKET }}/docker-compose.prod.yml /home/ec2-user/app/docker-compose.prod.yml",
+              "aws s3 cp s3://${{ env.S3_ARTIFACTS_BUCKET }}/nginx.conf /home/ec2-user/app/nginx.conf",
+              "aws s3 cp s3://${{ env.S3_ARTIFACTS_BUCKET }}/.env /home/ec2-user/app/.env",
               "cd /home/ec2-user/app && aws ecr get-login-password --region ${{ env.AWS_REGION }} | docker login --username AWS --password-stdin ${{ steps.login-ecr.outputs.registry }}",
               "cd /home/ec2-user/app && docker compose -f docker-compose.prod.yml pull",
-              "cd /home/ec2-user/app && docker compose -f docker-compose.prod.yml up -d | docker restart jawsight_nginx"
+              "cd /home/ec2-user/app && docker compose -f docker-compose.prod.yml up -d",
+              "docker restart jawsight_nginx"
             ]' \
             --region ${{ env.AWS_REGION }} \
             --query "Command.CommandId" \
@@ -115,7 +152,7 @@ jobs:
           aws ssm wait command-executed \
             --command-id "$COMMAND_ID" \
             --instance-id "${{ secrets.EC2_INSTANCE_ID }}" \
-            --region ${{ env.AWS_REGION }} || true # Avoid exiting early if the command fails, we want to fetch logss
+            --region ${{ env.AWS_REGION }} || true # Avoid exiting early if the command fails, we want to fetch logs
 
           # 3. Fetch the final status and execution output
           OUTPUT=$(aws ssm get-command-invocation \
