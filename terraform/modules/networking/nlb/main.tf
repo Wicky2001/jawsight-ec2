@@ -16,10 +16,10 @@ resource "aws_lb_target_group" "app" {
   target_type = "instance"
 
   # CRITICAL: Enable Proxy Protocol v2 for your NGINX setup
-  proxy_protocol_v2 = true
+  proxy_protocol_v2  = true
   preserve_client_ip = false
 
-health_check {
+  health_check {
     protocol            = "HTTP"
     port                = "traffic-port"
     path                = "/health"

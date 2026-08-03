@@ -7,7 +7,7 @@ variable "aws_region" {
 variable "aws_profile" {
   description = "AWS CLI profile to use for deployment"
   type        = string
-  default     = "jawsight-dev-terraform"
+  default     = "jawsight"
 }
 
 variable "project_name" {
@@ -32,7 +32,7 @@ variable "instance_type" {
 variable "acm_certificate_arn" {
   description = "ARN of the ACM certificate for TLS listener"
   type        = string
-  default     = "arn:aws:acm:ap-south-1:915658834610:certificate/da944a3d-6e35-4788-8294-1399dd46db7c"
+  default     = "arn:aws:acm:ap-south-1:473280638005:certificate/a2d276b8-698f-4ac1-b020-5f3776315d63"
 }
 
 variable "sqs_visibility_timeout" {
@@ -62,7 +62,7 @@ variable "webhook_url" {
 variable "image_uri" {
   description = "lambda image url"
   type        = string
-  default     = "915658834610.dkr.ecr.ap-south-1.amazonaws.com/jawsight-image-processor-dev-repo:v2"
+  default     = "473280638005.dkr.ecr.ap-south-1.amazonaws.com/jawsight-production-lambda:v8"
 }
 
 variable "db_username" {

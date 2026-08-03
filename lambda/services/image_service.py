@@ -275,3 +275,10 @@ def process_images(input_images_details):
 
     logger.info("✅ SUCCESS: process_images completed")
     return output_data
+
+
+
+
+
+
+

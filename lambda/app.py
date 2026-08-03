@@ -5,6 +5,7 @@ from services.s3_service import has_at_least_n_objects, save_image_to_s3_bucket
 from services.sns_service import push_to_sns
 from services.image_service import process_images
 from aws_xray_sdk.core import patch_all
+from config.debuggers import check_debuggers_exist,process_images_debuggers
 
 
 try:
@@ -37,6 +38,7 @@ def lambda_handler(event, context):
             doctor_id = body.get("doctor_id")
             patient_id = body.get("patient_id")
             iteration_id = body.get("iterationId")
+            patient_id_debug = body.get("patient_id_debug") #need to add this
 
             if not doctor_id or not iteration_id or not patient_id:
                 raise ValueError("Missing required fields")
@@ -51,7 +53,14 @@ def lambda_handler(event, context):
                 logger.warning(f"⚠️ WARNING: Skipping. Duplicate message: {output_folder_key}")
                 continue
             
-            output_image_data = process_images(input_image_details)
+            output_image_data = None
+            if check_debuggers_exist():
+                output_image_data = process_images_debuggers(input_image_details)
+            else:
+                output_image_data = process_images(input_image_details)
+                
+            
+            
             
             s3_upload_details = [
                 {"key": f"{output_folder_key}left", "image": output_image_data["left_image"]},
