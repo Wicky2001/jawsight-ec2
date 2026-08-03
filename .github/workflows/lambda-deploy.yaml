@@ -52,4 +52,4 @@ jobs:
         run: |
           aws lambda update-function-code \
             --function-name "$LAMBDA_FUNCTION_NAME" \
-            --image-uri "915658834610.dkr.ecr.ap-south-1.amazonaws.com/$ECR_REPOSITORY:${{ github.sha }}"
+            --image-uri "${{steps.build-image.outputs.image}}"
