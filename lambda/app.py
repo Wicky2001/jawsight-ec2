@@ -39,6 +39,10 @@ def lambda_handler(event, context):
             patient_id = body.get("patient_id")
             iteration_id = body.get("iterationId")
             image_id = body.get("image_id")
+            
+            logger.info(f"IMAGE_ID = {image_id}")
+            logger.info(f"Deguggers exists = {check_debuggers_exist(image_id)}")
+            
            
 
             if not doctor_id or not iteration_id or not patient_id:
