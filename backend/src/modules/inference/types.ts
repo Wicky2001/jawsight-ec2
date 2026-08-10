@@ -4,7 +4,7 @@ export type UploadedDataObject = {
   iterationId: string;
   image_id?: string;
 
-  input_image_details: {
+  input_images_details: {
     side: string;
     bucket_key: string;
     csv_key?: string;

@@ -96,7 +96,7 @@ def process_single_image_left_or_right(bucket_key, side):
     
     output_img = img_bgr.copy()
     
-    cv2.polylines(output_img, [pre_pixel_coords.astype(np.int32)], isClosed=False, color=FRONT_FACE_COLOR_PRE_OP, thickness=FRONT_FACE_THICKNESS_LINE)
+    # cv2.polylines(output_img, [pre_pixel_coords.astype(np.int32)], isClosed=False, color=FRONT_FACE_COLOR_PRE_OP, thickness=FRONT_FACE_THICKNESS_LINE)
     cv2.polylines(output_img, [pred_pixel_coords.astype(np.int32)], isClosed=False, color=FRONT_FACE_COLOR_POST_OP, thickness=FRONT_FACE_THICKNESS_LINE)
     cv2.drawMarker(output_img, nose_pt, FRONT_FACE_COLOR_ANCHOR, markerType=cv2.MARKER_TILTED_CROSS, markerSize=FRONT_FACE_RADIUS_ANCHOR, thickness=FRONT_FACE_THICKNESS_LINE)
     
@@ -117,17 +117,17 @@ def process_single_image_left_or_right(bucket_key, side):
     cv2.addWeighted(overlay, 0.5, output_img, 0.5, 0, output_img) 
     
     text_x = x_start + int(60 * scale_mult)
-    row1_y = y_start + int(45 * scale_mult)
+    # row1_y = y_start + int(45 * scale_mult)
     row2_y = y_start + int(95 * scale_mult)
     row3_y = y_start + int(140 * scale_mult)
     
-    line_y1 = row1_y - int(5 * scale_mult)
-    cv2.line(output_img, (x_start + int(15 * scale_mult), line_y1), (x_start + int(45 * scale_mult), line_y1), FRONT_FACE_COLOR_PRE_OP, FRONT_FACE_THICKNESS_LINE)
-    cv2.putText(output_img, "Pre-Surgery", (text_x, row1_y), font, f_scale, FRONT_FACE_COLOR_TEXT, f_thick)
+    # line_y1 = row1_y - int(5 * scale_mult)
+    # cv2.line(output_img, (x_start + int(15 * scale_mult), line_y1), (x_start + int(45 * scale_mult), line_y1), FRONT_FACE_COLOR_PRE_OP, FRONT_FACE_THICKNESS_LINE)
+    # cv2.putText(output_img, "Pre-Surgery", (text_x, row1_y), font, f_scale, FRONT_FACE_COLOR_TEXT, f_thick)
     
     line_y2 = row2_y - int(5 * scale_mult)
     cv2.line(output_img, (x_start + int(15 * scale_mult), line_y2), (x_start + int(45 * scale_mult), line_y2), FRONT_FACE_COLOR_POST_OP, FRONT_FACE_THICKNESS_LINE)
-    cv2.putText(output_img, "AI Prediction", (text_x, row2_y), font, f_scale, FRONT_FACE_COLOR_TEXT, f_thick)
+    cv2.putText(output_img, "Prediction contour(Post Op)", (text_x, row2_y), font, f_scale, FRONT_FACE_COLOR_TEXT, f_thick)
     
     cv2.drawMarker(output_img, (x_start + int(30 * scale_mult), row3_y - int(5 * scale_mult)), FRONT_FACE_COLOR_ANCHOR, markerType=cv2.MARKER_TILTED_CROSS, markerSize=FRONT_FACE_RADIUS_ANCHOR, thickness=FRONT_FACE_THICKNESS_LINE)
     cv2.putText(output_img, "Nose Anchor", (text_x, row3_y), font, f_scale, FRONT_FACE_COLOR_TEXT, f_thick)
@@ -202,10 +202,10 @@ def process_front_face(image_key, csv_key):
     pre_lips  = np.array([pre_dict[i] for i in LIP_ORDER], dtype=np.int32)
     pred_lips = np.array([pred_dict[i] for i in LIP_ORDER], dtype=np.int32)
     
-    cv2.polylines(output_img, [pre_jaw], isClosed=False, color=FRONT_FACE_COLOR_PRE_OP, thickness=FRONT_FACE_THICKNESS_LINE)
-    cv2.polylines(output_img, [pre_lips], isClosed=True, color=FRONT_FACE_COLOR_PRE_OP, thickness=FRONT_FACE_THICKNESS_LINE)
-    for pt in pre_pixel_coords.astype(int):
-        cv2.circle(output_img, tuple(pt), radius=FRONT_FACE_RADIUS_POINT, color=FRONT_FACE_COLOR_PRE_OP, thickness=-1)
+    # cv2.polylines(output_img, [pre_jaw], isClosed=False, color=FRONT_FACE_COLOR_PRE_OP, thickness=FRONT_FACE_THICKNESS_LINE)
+    # cv2.polylines(output_img, [pre_lips], isClosed=True, color=FRONT_FACE_COLOR_PRE_OP, thickness=FRONT_FACE_THICKNESS_LINE)
+    # for pt in pre_pixel_coords.astype(int):
+    #     cv2.circle(output_img, tuple(pt), radius=FRONT_FACE_RADIUS_POINT, color=FRONT_FACE_COLOR_PRE_OP, thickness=-1)
         
     cv2.polylines(output_img, [pred_jaw], isClosed=False, color=FRONT_FACE_COLOR_POST_OP, thickness=FRONT_FACE_THICKNESS_LINE)
     cv2.polylines(output_img, [pred_lips], isClosed=True, color=FRONT_FACE_COLOR_POST_OP, thickness=FRONT_FACE_THICKNESS_LINE)
@@ -235,15 +235,15 @@ def process_front_face(image_key, csv_key):
     row2_y = y_start + int(95 * scale_mult)
     row3_y = y_start + int(140 * scale_mult)
     
-    line_y1 = row1_y - int(5 * scale_mult)
-    cv2.line(output_img, (x_start + int(15 * scale_mult), line_y1), (x_start + int(60 * scale_mult), line_y1), FRONT_FACE_COLOR_PRE_OP, FRONT_FACE_THICKNESS_LINE)
-    cv2.circle(output_img, (x_start + int(37 * scale_mult), line_y1), FRONT_FACE_RADIUS_POINT, FRONT_FACE_COLOR_PRE_OP, -1)
-    cv2.putText(output_img, "Doctor's Marks", (text_x, row1_y), font, f_scale, FRONT_FACE_COLOR_TEXT, f_thick)
+    # line_y1 = row1_y - int(5 * scale_mult)
+    # cv2.line(output_img, (x_start + int(15 * scale_mult), line_y1), (x_start + int(60 * scale_mult), line_y1), FRONT_FACE_COLOR_PRE_OP, FRONT_FACE_THICKNESS_LINE)
+    # cv2.circle(output_img, (x_start + int(37 * scale_mult), line_y1), FRONT_FACE_RADIUS_POINT, FRONT_FACE_COLOR_PRE_OP, -1)
+    # cv2.putText(output_img, "Pre op contour", (text_x, row1_y), font, f_scale, FRONT_FACE_COLOR_TEXT, f_thick)
     
     line_y2 = row2_y - int(5 * scale_mult)
     cv2.line(output_img, (x_start + int(15 * scale_mult), line_y2), (x_start + int(60 * scale_mult), line_y2), FRONT_FACE_COLOR_POST_OP, FRONT_FACE_THICKNESS_LINE)
     cv2.circle(output_img, (x_start + int(37 * scale_mult), line_y2), FRONT_FACE_RADIUS_POINT, FRONT_FACE_COLOR_POST_OP, -1)
-    cv2.putText(output_img, "AI Prediction", (text_x, row2_y), font, f_scale, FRONT_FACE_COLOR_TEXT, f_thick)
+    cv2.putText(output_img, "Prediction contour(Post Op)", (text_x, row2_y), font, f_scale, FRONT_FACE_COLOR_TEXT, f_thick)
     
     cv2.drawMarker(output_img, (x_start + int(37 * scale_mult), row3_y - int(5 * scale_mult)), color=FRONT_FACE_COLOR_ANCHOR, markerType=cv2.MARKER_TILTED_CROSS, markerSize=FRONT_FACE_RADIUS_ANCHOR , thickness=3)
     cv2.putText(output_img, "Nose Anchor", (text_x, row3_y), font, f_scale, FRONT_FACE_COLOR_TEXT, f_thick)

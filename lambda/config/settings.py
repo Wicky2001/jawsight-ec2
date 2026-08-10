@@ -30,7 +30,7 @@ ENV = os.getenv("ENV") or os.getenv("ENVIRONMENT") or "production"
 # GLOBAL VISUALIZATION SETTINGS (FRONT FACE)
 # =========================================================
 FRONT_FACE_COLOR_PRE_OP    = (255, 0, 0)      # Solid Blue (Doctor's Marks)
-FRONT_FACE_COLOR_POST_OP   = (0, 255, 0)      # Solid Green (AI Prediction)
+FRONT_FACE_COLOR_POST_OP   = (0, 0, 255)      # Solid Red (AI Prediction)
 FRONT_FACE_COLOR_ANCHOR    = (0, 0, 255)      # Solid Red (Nose Anchor)
 FRONT_FACE_COLOR_TEXT      = (255, 255, 255)  # White
 FRONT_FACE_COLOR_LEGEND_BG = (0, 0, 0)        # Black

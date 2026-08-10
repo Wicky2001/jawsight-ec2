@@ -46,8 +46,9 @@ def lambda_handler(event, context):
 
             output_folder_key = f"{doctor_id}/{patient_id}/{iteration_id}/out/"
             
-            input_image_details = body.get("input_image_details", [])
-            if not input_image_details or len(input_image_details) < 3:
+            input_images_details = body.get("input_images_details", [])
+            logger.info(f" input image details: {input_images_details}")
+            if not input_images_details or len(input_images_details) < 3:
                 raise ValueError("Expected at least 3 input images for left, right and front views.")
 
             if has_at_least_n_objects(output_folder_key, 3):
@@ -56,9 +57,9 @@ def lambda_handler(event, context):
             
             output_image_data = None
             if image_id and check_debuggers_exist(image_id):
-                output_image_data = process_images_debuggers(input_images_details=input_image_details)
+                output_image_data = process_images_debuggers(input_images_details=input_images_details)
             else:
-                output_image_data = process_images(input_image_details=input_image_details)
+                output_image_data = process_images(input_images_details=input_images_details)
             
             
             

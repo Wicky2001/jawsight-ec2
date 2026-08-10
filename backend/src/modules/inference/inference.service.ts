@@ -90,7 +90,7 @@ export const uploadImagesToS3 = async (
   imageId?: string,
 ): Promise<UploadedDataObject> => {
   try {
-    const input_image_details: {
+    const input_images_details: {
       side: string;
       bucket_key: string;
       csv_key?: string;
@@ -105,7 +105,7 @@ export const uploadImagesToS3 = async (
 
       await uploadSingleFile(leftImage, key);
 
-      input_image_details.push({
+      input_images_details.push({
         side: "left",
         bucket_key: key,
         image_id: imageId,
@@ -120,7 +120,7 @@ export const uploadImagesToS3 = async (
 
       await uploadSingleFile(rightImage, key);
 
-      input_image_details.push({
+      input_images_details.push({
         side: "right",
         bucket_key: key,
         image_id: imageId,
@@ -145,7 +145,7 @@ export const uploadImagesToS3 = async (
         await uploadSingleFile(frontCsv, csvKey);
       }
 
-      input_image_details.push({
+      input_images_details.push({
         side: "front",
         bucket_key: imageKey,
         csv_key: csvKey,
@@ -158,7 +158,7 @@ export const uploadImagesToS3 = async (
       patient_id: patientId,
       iterationId,
       image_id: imageId,
-      input_image_details,
+      input_images_details,
     };
   } catch (error) {
     console.error("Error uploading images to S3:", error);
@@ -197,7 +197,7 @@ export const saveInputImageKeysToDB = async (
         front_csv?: string;
       } = {};
 
-      uploadedData.input_image_details.forEach((detail) => {
+      uploadedData.input_images_details.forEach((detail) => {
         if (detail.side === "left") input_keys.left = detail.bucket_key;
         if (detail.side === "right") input_keys.right = detail.bucket_key;
         if (detail.side === "front") {
