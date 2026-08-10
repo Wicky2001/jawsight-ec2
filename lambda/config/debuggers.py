@@ -24,8 +24,14 @@ from pathlib import Path
 
 
 
+DEBUG_FILES_DIR = Path(__file__).resolve().parent / "debug_files"
+LEFT_CSV_PATH = DEBUG_FILES_DIR / "LEFT.csv"
+RIGHT_CSV_PATH = DEBUG_FILES_DIR / "RIGHT.csv"
+FRONT_CSV_DIR = DEBUG_FILES_DIR / "front"
+
+
 def process_images_debuggers(input_images_details):
-    logger.info("✅ SUCCESS: process_images started with %d inputs", len(input_images_details))
+    logger.info("🪲 DEBUGGER: debugger flow started for %d input image(s)", len(input_images_details))
     
     output_data = {
         "left_image": None,
@@ -36,36 +42,45 @@ def process_images_debuggers(input_images_details):
     for image_data in input_images_details:
         side = image_data.get("side")
         bucket_key = image_data.get("bucket_key")
-        patient_id=image_data.get("patient_id")
+        image_id=image_data.get("image_id")
         
         if side == "left" or side == "right":
-            side, output_img = process_single_image_left_or_right_debuggers(bucket_key, side,patient_id)
+            logger.info("🪲 DEBUGGER: generating side debugger image for side=%s image_id=%s", side, image_id)
+            side, output_img = process_single_image_left_or_right_debuggers(bucket_key, side, image_id)
             if side == "left":
                 output_data["left_image"] = output_img
+                logger.info("✅ DEBUGGER: left-side debugger image generated successfully for image_id=%s", image_id)
             else:
                 output_data["right_image"] = output_img
+                logger.info("✅ DEBUGGER: right-side debugger image generated successfully for image_id=%s", image_id)
         else:
-            output_data["front_image"] = process_front_face_debuggers(bucket_key, csv_key=image_data.get("csv_key"))
+            logger.info("🪲 DEBUGGER: generating front debugger image for image_id=%s", image_id)
+            output_data["front_image"] = process_front_face_debuggers(
+                bucket_key,
+                side=side,
+                image_id=image_id,
+            )
+            logger.info("✅ DEBUGGER: front debugger image generated successfully for image_id=%s", image_id)
 
-    logger.info("✅ SUCCESS: process_images completed")
+    logger.info("✅ SUCCESS: debugger image generation completed")
     return output_data
 
 
 
-def process_single_image_left_or_right_debuggers(bucket_key, side, patient_id):
+def process_single_image_left_or_right_debuggers(bucket_key, side, image_id):
     """
     Draws the ground-truth post-op contour (from the training CSV) directly
     onto the pre-op image, using the patient's stored Nose_X/Nose_Y/Scale_Factor
     to unnormalize the CSV's Post_X_i/Post_Y_i points. No model inference.
     """
-    logger.info("✅ SUCCESS: process_single_image_left_or_right started. side=%s, key=%s", side, bucket_key)
+    logger.info("🪲 DEBUGGER: starting side-image debugger pipeline. side=%s, key=%s, image_id=%s", side, bucket_key, image_id)
 
     if side == "left":
         is_left = True
-        csv_path = "./config/debug_files/LEFT.csv"
+        csv_path = LEFT_CSV_PATH
     else:
         is_left = False
-        csv_path = "./config/debug_files/RIGHT.csv"
+        csv_path = RIGHT_CSV_PATH
 
     image_bytes = read_file_from_s3(bucket_key)
     if not image_bytes:
@@ -82,9 +97,13 @@ def process_single_image_left_or_right_debuggers(bucket_key, side, patient_id):
 
     # --- Load ground-truth row for this patient from the CSV ---
     df = pd.read_csv(csv_path)
-    row = df[df["Patient_ID"] == patient_id]
+    id_column = "image_id" if "image_id" in df.columns else "Patient_ID" if "Patient_ID" in df.columns else None
+    if not id_column:
+        raise UnsuitableImageError(f"Neither 'image_id' nor 'Patient_ID' column was found in {csv_path}.")
+
+    row = df[df[id_column] == image_id]
     if row.empty:
-        raise UnsuitableImageError(f"Patient_ID '{patient_id}' not found in {csv_path}.")
+        raise UnsuitableImageError(f"image_id '{image_id}' not found in {csv_path}.")
     row = row.iloc[0]
 
     nose_pt = (int(row["Nose_X"]), int(row["Nose_Y"]))
@@ -143,42 +162,45 @@ def process_single_image_left_or_right_debuggers(bucket_key, side, patient_id):
     cv2.drawMarker(output_img, (x_start + int(30 * scale_mult), row3_y - int(5 * scale_mult)), FRONT_FACE_COLOR_ANCHOR, markerType=cv2.MARKER_TILTED_CROSS, markerSize=FRONT_FACE_RADIUS_ANCHOR, thickness=FRONT_FACE_THICKNESS_LINE)
     cv2.putText(output_img, "Nose Anchor", (text_x, row3_y), font, f_scale, FRONT_FACE_COLOR_TEXT, f_thick)
 
-    logger.info("✅ SUCCESS: process_single_image_left_or_right completed. side=%s", side)
+    logger.info("✅ DEBUGGER: side-image debugger pipeline completed successfully. side=%s, image_id=%s", side, image_id)
     return side, output_img
 
-def process_front_face_debuggers(bucket_key, side, patient_id):
+def process_front_face_debuggers(bucket_key, side=None, image_id=None):
     """
     Downloads the patient's image from S3 (bucket_key), then locates that
     patient's FIN (pre-op) and FOUT (post-op) ground-truth CSVs inside the
-    local i_path folder using patient_id — a CSV containing "IN" in its
+    local i_path folder using image_id — a CSV containing "IN" in its
     filename is treated as FIN, one containing "OUT" is treated as FOUT.
     Draws both traces onto the image. No model inference.
 
     bucket_key: S3 key for this patient's image.
     side: unused for front face (kept for signature consistency with the
           left/right function).
-    patient_id: e.g. "PN1"
+    image_id: e.g. "PN1"
     """
-    logger.info("✅ SUCCESS: process_front_face started. bucket_key=%s, side=%s, patient_id=%s", bucket_key, side, patient_id)
+    logger.info("🪲 DEBUGGER: starting front-image debugger pipeline. bucket_key=%s, side=%s, image_id=%s", bucket_key, side, image_id)
 
-    i_path = "folder_path"  # hardcoded CSV ground-truth folder
+    i_path = str(FRONT_CSV_DIR)
 
     # --- Locate this patient's CSVs inside the local ground-truth folder ---
-    csv_dir = Path("./config/debug_files/front")
-    matching_csvs = [f for f in csv_dir.iterdir() if f.is_file() and f.suffix.lower() == ".csv" and patient_id in f.name]
+    csv_dir = FRONT_CSV_DIR
+    matching_csvs = [f for f in csv_dir.iterdir() if f.is_file() and f.suffix.lower() == ".csv" and image_id in f.name]
 
     if not matching_csvs:
-        raise ValueError(f"ERROR MESSAGE: No csv files found for patient_id={patient_id} in {i_path}")
+        logger.error("❌ DEBUGGER: no matching CSV files found for image_id=%s in %s", image_id, i_path)
+        raise ValueError(f"ERROR MESSAGE: No csv files found for image_id={image_id} in {i_path}")
 
     fin_csv_path = next((f for f in matching_csvs if "IN" in f.name.upper()), None)
     fout_csv_path = next((f for f in matching_csvs if "OUT" in f.name.upper()), None)
 
     if not fin_csv_path:
-        raise ValueError(f"ERROR MESSAGE: No FIN (IN) csv found for patient_id={patient_id} in {i_path}")
+        logger.error("❌ DEBUGGER: no FIN CSV found for image_id=%s in %s", image_id, i_path)
+        raise ValueError(f"ERROR MESSAGE: No FIN (IN) csv found for image_id={image_id} in {i_path}")
     if not fout_csv_path:
-        raise ValueError(f"ERROR MESSAGE: No FOUT (OUT) csv found for patient_id={patient_id} in {i_path}")
+        logger.error("❌ DEBUGGER: no FOUT CSV found for image_id=%s in %s", image_id, i_path)
+        raise ValueError(f"ERROR MESSAGE: No FOUT (OUT) csv found for image_id={image_id} in {i_path}")
 
-    logger.info("✅ SUCCESS: Resolved local CSVs — fin_csv=%s, fout_csv=%s", fin_csv_path, fout_csv_path)
+    logger.info("✅ DEBUGGER: resolved local CSVs — fin_csv=%s, fout_csv=%s", fin_csv_path, fout_csv_path)
 
     df_fin = pd.read_csv(fin_csv_path)
     df_fout = pd.read_csv(fout_csv_path)
@@ -288,22 +310,22 @@ def process_front_face_debuggers(bucket_key, side, patient_id):
     cv2.drawMarker(output_img, (x_start + int(37 * scale_mult), row3_y - int(5 * scale_mult)), color=FRONT_FACE_COLOR_ANCHOR, markerType=cv2.MARKER_TILTED_CROSS, markerSize=FRONT_FACE_RADIUS_ANCHOR, thickness=3)
     cv2.putText(output_img, "Nose Anchor", (text_x, row3_y), font, f_scale, FRONT_FACE_COLOR_TEXT, f_thick)
 
-    logger.info("✅ SUCCESS: process_front_face completed for patient_id=%s", patient_id)
+    logger.info("✅ DEBUGGER: front-image debugger pipeline completed successfully for image_id=%s", image_id)
     return output_img
 
 
 
-def check_debuggers_exist(patient_id):
+def check_debuggers_exist(image_id):
     """
-    Checks whether ground-truth data exists for the given patient_id across:
-      - LEFT.csv  (Patient_ID column)
-      - RIGHT.csv (Patient_ID column)
+    Checks whether ground-truth data exists for the given image_id across:
+      - LEFT.csv  (image_id column)
+      - RIGHT.csv (image_id column)
       - the front-face ground-truth folder (i_path), for FIN/FOUT csvs
 
     Returns True if data is found in at least one of these sources,
     otherwise False.
     """
-    i_path = "./config/debug_files/front"  
+    i_path = str(FRONT_CSV_DIR)
 
     found_left = False
     found_right = False
@@ -311,39 +333,41 @@ def check_debuggers_exist(patient_id):
 
     # --- Check LEFT.csv ---
     try:
-        df_left = pd.read_csv("LEFT.csv")
-        found_left = patient_id in df_left["Patient_ID"].values
+        df_left = pd.read_csv(LEFT_CSV_PATH)
+        left_id_col = "image_id" if "image_id" in df_left.columns else "Patient_ID" if "Patient_ID" in df_left.columns else None
+        found_left = image_id in df_left[left_id_col].values if left_id_col else False
     except FileNotFoundError:
-        logger.warning("⚠️ LEFT.csv not found while checking patient_id=%s", patient_id)
+        logger.warning("⚠️ LEFT.csv not found while checking image_id=%s", image_id)
     except Exception as e:
-        logger.warning("⚠️ Error reading LEFT.csv while checking patient_id=%s: %s", patient_id, e)
+        logger.warning("⚠️ Error reading LEFT.csv while checking image_id=%s: %s", image_id, e)
 
     # --- Check RIGHT.csv ---
     try:
-        df_right = pd.read_csv("RIGHT.csv")
-        found_right = patient_id in df_right["Patient_ID"].values
+        df_right = pd.read_csv(RIGHT_CSV_PATH)
+        right_id_col = "image_id" if "image_id" in df_right.columns else "Patient_ID" if "Patient_ID" in df_right.columns else None
+        found_right = image_id in df_right[right_id_col].values if right_id_col else False
     except FileNotFoundError:
-        logger.warning("⚠️ RIGHT.csv not found while checking patient_id=%s", patient_id)
+        logger.warning("⚠️ RIGHT.csv not found while checking image_id=%s", image_id)
     except Exception as e:
-        logger.warning("⚠️ Error reading RIGHT.csv while checking patient_id=%s: %s", patient_id, e)
+        logger.warning("⚠️ Error reading RIGHT.csv while checking image_id=%s: %s", image_id, e)
 
     # --- Check front-face folder for FIN/FOUT csvs ---
     try:
         csv_dir = Path(i_path)
-        matching_csvs = [f for f in csv_dir.iterdir() if f.is_file() and f.suffix.lower() == ".csv" and patient_id in f.name]
+        matching_csvs = [f for f in csv_dir.iterdir() if f.is_file() and f.suffix.lower() == ".csv" and image_id in f.name]
 
         has_fin = any("IN" in f.name.upper() for f in matching_csvs)
         has_fout = any("OUT" in f.name.upper() for f in matching_csvs)
         found_front = has_fin and has_fout
     except FileNotFoundError:
-        logger.warning("⚠️ Folder %s not found while checking patient_id=%s", i_path, patient_id)
+        logger.warning("⚠️ Folder %s not found while checking image_id=%s", i_path, image_id)
     except Exception as e:
-        logger.warning("⚠️ Error scanning %s while checking patient_id=%s: %s", i_path, patient_id, e)
+        logger.warning("⚠️ Error scanning %s while checking image_id=%s: %s", i_path, image_id, e)
 
     result = found_left or found_right or found_front
     logger.info(
-        "✅ check_patient_data_exists patient_id=%s | LEFT=%s RIGHT=%s FRONT=%s -> result=%s",
-        patient_id, found_left, found_right, found_front, result
+        "✅ check_patient_data_exists image_id=%s | LEFT=%s RIGHT=%s FRONT=%s -> result=%s",
+        image_id, found_left, found_right, found_front, result
     )
     return result
 

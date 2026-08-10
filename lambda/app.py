@@ -38,7 +38,8 @@ def lambda_handler(event, context):
             doctor_id = body.get("doctor_id")
             patient_id = body.get("patient_id")
             iteration_id = body.get("iterationId")
-            patient_id_debug = body.get("patient_id_debug") #need to add this
+            image_id = body.get("image_id")
+           
 
             if not doctor_id or not iteration_id or not patient_id:
                 raise ValueError("Missing required fields")
@@ -54,11 +55,10 @@ def lambda_handler(event, context):
                 continue
             
             output_image_data = None
-            if check_debuggers_exist():
-                output_image_data = process_images_debuggers(input_image_details)
+            if image_id and check_debuggers_exist(image_id):
+                output_image_data = process_images_debuggers(input_images_details=input_image_details)
             else:
-                output_image_data = process_images(input_image_details)
-                
+                output_image_data = process_images(input_image_details=input_image_details)
             
             
             
@@ -74,6 +74,7 @@ def lambda_handler(event, context):
                 "doctor_id": doctor_id,
                 "patient_id": patient_id,
                 "iterationId": iteration_id,
+                "image_id": image_id,
                 "output_images_keys":{
                     "left": f"{output_folder_key}left",
                     "right": f"{output_folder_key}right",

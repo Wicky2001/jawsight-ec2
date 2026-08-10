@@ -19,6 +19,15 @@ import { fetchPatientDropdown } from "./Inference.service";
 
 type InferencePhase = "idle" | "uploading" | "processing" | "completed";
 
+const extractImageIdFromFileName = (fileName?: string | null) => {
+  if (!fileName) return null;
+
+  const cleanName = fileName.replace(/\.[^/.]+$/, "").trim();
+  const match = cleanName.match(/^(FIN|RIN|LIN)_(.+)$/i);
+
+  return match?.[2]?.trim() || null;
+};
+
 const Inference = () => {
   const [images, setImages] = useState<{
     left: string | null;
@@ -27,6 +36,11 @@ const Inference = () => {
   }>({ left: null, right: null, front: null });
   const [csvData, setCsvData] = useState<string | null>(null);
   const [savedPointsArray, setSavedPointsArray] = useState<any[] | null>(null);
+  const [uploadedFileNames, setUploadedFileNames] = useState<{
+    left: string | null;
+    right: string | null;
+    front: string | null;
+  }>({ left: null, right: null, front: null });
   const [selectedPatientId, setSelectedPatientId] = useState<number | null>(
     null,
   );
@@ -107,6 +121,7 @@ const Inference = () => {
   const resetInference = () => {
     clearProcessingTimeout();
     setImages({ left: null, right: null, front: null });
+    setUploadedFileNames({ left: null, right: null, front: null });
     setCsvData(null);
     setSavedPointsArray(null);
     setSelectedPatientId(null);
@@ -117,8 +132,13 @@ const Inference = () => {
     clearPrediction();
   };
 
-  const handleUpload = (id: "left" | "right" | "front", dataUrl: string) => {
+  const handleUpload = (
+    id: "left" | "right" | "front",
+    dataUrl: string,
+    fileName?: string,
+  ) => {
     setImages((prev) => ({ ...prev, [id]: dataUrl }));
+    setUploadedFileNames((prev) => ({ ...prev, [id]: fileName || null }));
     if (id === "front") {
       setShowLandmarkModal(true);
     }
@@ -126,6 +146,7 @@ const Inference = () => {
 
   const handleRemove = (id: "left" | "right" | "front") => {
     setImages((prev) => ({ ...prev, [id]: null }));
+    setUploadedFileNames((prev) => ({ ...prev, [id]: null }));
     if (id === "front") {
       setCsvData(null);
       setSavedPointsArray(null);
@@ -152,19 +173,36 @@ const Inference = () => {
     setIsSubmitting(true);
     setPhase("uploading");
     try {
+      const imageId = [
+        uploadedFileNames.left,
+        uploadedFileNames.right,
+        uploadedFileNames.front,
+      ]
+        .map((name) => extractImageIdFromFileName(name))
+        .find(Boolean);
+
       const formData = new FormData();
       formData.append("patientId", String(selectedPatientId));
+      if (imageId) {
+        formData.append("image_id", imageId);
+      }
       formData.append(
         "leftImage",
-        dataURLtoFile(images.left as string, "left"),
+        dataURLtoFile(images.left as string, uploadedFileNames.left || "left"),
       );
       formData.append(
         "rightImage",
-        dataURLtoFile(images.right as string, "right"),
+        dataURLtoFile(
+          images.right as string,
+          uploadedFileNames.right || "right",
+        ),
       );
       formData.append(
         "frontImage",
-        dataURLtoFile(images.front as string, "front"),
+        dataURLtoFile(
+          images.front as string,
+          uploadedFileNames.front || "front",
+        ),
       );
 
       const csvBlob = new Blob([csvData as string], { type: "text/csv" });

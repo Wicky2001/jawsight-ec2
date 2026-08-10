@@ -117,6 +117,7 @@ export const snsWebhookController = async (req: Request, res: Response) => {
 export const uploadImagesController = catchAsync(
   async (req: Request, res: Response) => {
     const patientId = req.body?.patientId;
+    const imageId = req.body?.image_id;
     if (!patientId) {
       throw new ApiError(
         httpStatus.BAD_REQUEST,
@@ -149,13 +150,17 @@ export const uploadImagesController = catchAsync(
       patientId,
       iterationId,
       req.user?.id!,
+      imageId,
     );
 
     // save bucket keys to DB
     const inferenceHistoryId = await saveInputImageKeysToDB(uploadedData);
 
     // Push the message to SQS
+
     await pushToSqsQueue(uploadedData);
+    debugger;
+    console.log("sqs data = " + JSON.stringify(uploadedData));
 
     resultTimeOutService(inferenceHistoryId, 15);
 

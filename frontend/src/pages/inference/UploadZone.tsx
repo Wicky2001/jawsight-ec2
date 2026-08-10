@@ -11,7 +11,11 @@ interface UploadZoneProps {
   hasCsv?: boolean;
   showStatus?: boolean;
   showControls?: boolean;
-  onUpload: (id: "left" | "right" | "front", dataUrl: string) => void;
+  onUpload: (
+    id: "left" | "right" | "front",
+    dataUrl: string,
+    fileName?: string,
+  ) => void;
   onRemove: (id: "left" | "right" | "front") => void;
   onError: (msg: string) => void;
   onEditMarks?: () => void;
@@ -50,7 +54,7 @@ export const UploadZone: React.FC<UploadZoneProps> = ({
 
     const reader = new FileReader();
     reader.onloadend = () => {
-      onUpload(id, reader.result as string);
+      onUpload(id, reader.result as string, file.name);
     };
     reader.readAsDataURL(file);
   };

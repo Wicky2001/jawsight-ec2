@@ -87,12 +87,14 @@ export const uploadImagesToS3 = async (
   patientId: number,
   iterationId: string,
   doctorId: number,
+  imageId?: string,
 ): Promise<UploadedDataObject> => {
   try {
     const input_image_details: {
       side: string;
       bucket_key: string;
       csv_key?: string;
+      image_id?: string;
     }[] = [];
 
     // LEFT IMAGE
@@ -106,6 +108,7 @@ export const uploadImagesToS3 = async (
       input_image_details.push({
         side: "left",
         bucket_key: key,
+        image_id: imageId,
       });
     }
 
@@ -120,6 +123,7 @@ export const uploadImagesToS3 = async (
       input_image_details.push({
         side: "right",
         bucket_key: key,
+        image_id: imageId,
       });
     }
 
@@ -145,6 +149,7 @@ export const uploadImagesToS3 = async (
         side: "front",
         bucket_key: imageKey,
         csv_key: csvKey,
+        image_id: imageId,
       });
     }
 
@@ -152,6 +157,7 @@ export const uploadImagesToS3 = async (
       doctor_id: doctorId,
       patient_id: patientId,
       iterationId,
+      image_id: imageId,
       input_image_details,
     };
   } catch (error) {
@@ -211,7 +217,7 @@ export const saveInputImageKeysToDB = async (
         { transaction: t },
       );
 
-      return inferenceHistory.id;
+      return inferenceHistory.getDataValue("id") as number;
     });
   } catch (err: any) {
     if (err instanceof ApiError) {
@@ -385,7 +391,7 @@ export const resultTimeOutService = (
             where: { id: inferenceId },
             transaction: timeoutTx,
           });
-          if (record && record.status === "PROCESSING") {
+          if (record && record.getDataValue("status") === "PROCESSING") {
             await record.update(
               { status: "FAILED" },
               { transaction: timeoutTx },

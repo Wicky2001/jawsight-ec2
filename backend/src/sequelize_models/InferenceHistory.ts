@@ -3,16 +3,16 @@ import { Doctor } from './Doctor.js';
 import { Patient } from './Patient.js';
 
 export class InferenceHistory extends Model {
-  public id!: number;
-  public patient_id!: number;
-  public doctor_id!: number;
-  public iteration_code!: string;
-  public input_bucket_keys!: { left?: string; right?: string; front?: string; front_csv?: string } | null;
-  public output_bucket_keys!: { left?: string; right?: string; front?: string } | null;
-  public status!: "FAILED" | "PROCESSING" | "COMPLETED";
+  declare id: number;
+  declare patient_id: number;
+  declare doctor_id: number;
+  declare iteration_code: string;
+  declare input_bucket_keys: { left?: string; right?: string; front?: string; front_csv?: string } | null;
+  declare output_bucket_keys: { left?: string; right?: string; front?: string } | null;
+  declare status: "FAILED" | "PROCESSING" | "COMPLETED";
 
-  public readonly createdAt!: Date;
-  public readonly updatedAt!: Date;
+  declare readonly createdAt: Date;
+  declare readonly updatedAt: Date;
 
   static initModel(sequelize: Sequelize) {
     InferenceHistory.init(

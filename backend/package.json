@@ -6,7 +6,7 @@
   "description": "api of mandibular retrogathia and prognathism",
   "main": "index.js",
   "scripts": {
-    "dev:debug": "cross-env NODE_OPTIONS=\"--trace-uncaught --trace-deprecation --trace-warnings\" NODE_ENV=development nodemon --verbose --watch \"src\" --watch \"../shared/src\" --ext ts,js,json --exec \"tsx --inspect-brk src/index.ts\"",
+    "dev:debug": "cross-env NODE_OPTIONS=\"--trace-uncaught --trace-deprecation --trace-warnings\" NODE_ENV=development nodemon --verbose --watch \"src\" --watch \"../shared/src\" --ext ts,js,json --exec \"tsx --inspect src/index.ts\"",
     "dev": "cross-env NODE_OPTIONS=\"--trace-uncaught --trace-deprecation --trace-warnings\" NODE_ENV=development nodemon --verbose --watch \"src\" --watch \"../shared/src\" --ext ts,js,json --exec \"tsx src/index.ts\"",
     "build": "tsc",
     "start": "cross-env NODE_ENV=production node dist/backend/src/index.js"

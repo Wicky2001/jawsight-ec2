@@ -11,6 +11,7 @@ import { AuditLog } from "./AuditLog.js";
 const require = createRequire(import.meta.url);
 const pg = require("pg");
 const dialectModule = tracingEnabled ? AWSXRay.capturePostgres(pg) : undefined;
+const dialect = (process.env.DB_DIALECT ?? "postgres") as any;
 
 const createSequelize = () =>
   new Sequelize(
@@ -19,7 +20,7 @@ const createSequelize = () =>
     process.env.DB_PASSWORD,
     {
       host: process.env.DB_HOST,
-      dialect: process.env.DB_DIALECT as any,
+      dialect,
       ...(dialectModule ? { dialectModule } : {}),
       port: Number(process.env.DB_PORT),
       logging: false,
@@ -41,7 +42,7 @@ if (process.env.NODE_ENV === "development") {
     process.env.DB_PASSWORD,
     {
       host: process.env.DB_HOST,
-      dialect: process.env.DB_DIALECT as any,
+      dialect,
       port: Number(process.env.DB_PORT),
       logging: false,
     },

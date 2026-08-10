@@ -1,8 +1,30 @@
 import os
+from pathlib import Path
+
+
+def load_env_file() -> None:
+    env_file = Path(__file__).resolve().parent.parent / ".env"
+    if not env_file.exists():
+        return
+
+    for raw_line in env_file.read_text(encoding="utf-8").splitlines():
+        line = raw_line.strip()
+        if not line or line.startswith("#") or "=" not in line:
+            continue
+
+        key, _, value = line.partition("=")
+        key = key.strip()
+        value = value.strip().strip('"').strip("'")
+
+        if key and key not in os.environ:
+            os.environ[key] = value
+
+
+load_env_file()
 
 BUCKET_NAME = os.getenv("BUCKET_NAME")
 SNS_TOPIC_ARN = os.getenv("SNS_TOPIC_ARN")
-ENV = os.getenv("ENV", "production")
+ENV = os.getenv("ENV") or os.getenv("ENVIRONMENT") or "production"
 
 # =========================================================
 # GLOBAL VISUALIZATION SETTINGS (FRONT FACE)
