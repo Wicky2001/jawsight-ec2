@@ -7,7 +7,7 @@ variable "aws_region" {
 variable "aws_profile" {
   description = "AWS CLI profile to use for deployment"
   type        = string
-  default     = "jawsight-dev-terraform"
+  default     = "jawsight-dev"
 }
 
 variable "project_name" {

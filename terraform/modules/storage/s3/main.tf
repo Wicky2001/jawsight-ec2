@@ -50,3 +50,14 @@ resource "aws_s3_bucket_policy" "public-model-storage" {
   # otherwise AWS will reject the policy attachment.
   depends_on = [aws_s3_bucket_public_access_block.public-model-storage]
 }
+
+# Step 3: Upload the rembg model used by the Lambda Docker build (wget in lambda/Dockerfile)
+resource "aws_s3_object" "u2net_human_seg_model" {
+  count = var.model_file_path == null ? 0 : 1
+
+  bucket       = aws_s3_bucket.public-model-storage.id
+  key          = "u2net_human_seg.onnx"
+  source       = var.model_file_path
+  source_hash  = filemd5(var.model_file_path) # re-upload only when the local file changes
+  content_type = "application/octet-stream"
+}

@@ -51,6 +51,11 @@ output "public-model-storage-s3-bucket_arn" {
   value       = module.s3.public_model_s3_bucket_arn
 }
 
+output "u2net_model_url" {
+  description = "Public URL of u2net_human_seg.onnx for lambda/Dockerfile"
+  value       = module.s3.u2net_model_url
+}
+
 output "artifacts_s3_bucket_name" {
   description = "Artifacts Bucket Name"
   value       = module.s3.deployment_artifacts_s3_bucket_name

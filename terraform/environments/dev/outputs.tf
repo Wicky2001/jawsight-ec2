@@ -1,11 +1,11 @@
 output "s3_bucket_name" {
   description = "Data Bucket Name"
-  value       = module.s3.s3_bucket_name
+  value       = module.s3.data_s3_bucket_name
 }
 
 output "s3_bucket_arn" {
   description = "Data Bucket ARN"
-  value       = module.s3.s3_bucket_arn
+  value       = module.s3.data_s3_bucket_arn
 }
 
 output "image_processing_queue_arn" {
@@ -35,7 +35,7 @@ output "lambda_arn" {
 
 output "ecr_repository_url" {
   description = "ECR Repository URL"
-  value       = module.ecr.repository_url
+  value       = module.ecr.lambda_repository_url
 }
 
 output "iam_role_arn" {

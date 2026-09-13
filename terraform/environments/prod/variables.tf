@@ -32,7 +32,7 @@ variable "instance_type" {
 variable "acm_certificate_arn" {
   description = "ARN of the ACM certificate for TLS listener"
   type        = string
-  default     = "arn:aws:acm:ap-south-1:473280638005:certificate/a2d276b8-698f-4ac1-b020-5f3776315d63"
+  default     = "arn:aws:acm:ap-south-1:677501681528:certificate/a3d49952-5edf-4eaa-a3f9-8123483733f7"
 }
 
 variable "sqs_visibility_timeout" {
@@ -62,7 +62,8 @@ variable "webhook_url" {
 variable "image_uri" {
   description = "lambda image url"
   type        = string
-  default     = "473280638005.dkr.ecr.ap-south-1.amazonaws.com/jawsight-production-lambda:v8"
+  default     = "677501681528.dkr.ecr.ap-south-1.amazonaws.com/jawsight-production-lambda:latest"
+
 }
 
 variable "db_username" {
@@ -87,6 +88,19 @@ variable "public_key_openssh" {
   description = "Public key in OpenSSH format for EC2 key pair"
   type        = string
   sensitive   = true
+}
+
+variable "openai_api_key" {
+  description = "OpenAI API key for the Lambda image generation (set in terraform.tfvars)"
+  type        = string
+  default     = ""
+  sensitive   = true
+}
+
+variable "openai_image_model" {
+  description = "OpenAI image model used by the Lambda"
+  type        = string
+  default     = "gpt-image-1.5"
 }
 
 variable "db_instance_class" {

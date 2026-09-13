@@ -4,6 +4,8 @@ import {
   CheckCircle,
   Image as ImageIcon,
   AlertCircle,
+  ScanFace,
+  Spline,
 } from "lucide-react";
 import { api } from "../../helpers/apiClient/apiClient";
 import { dataURLtoFile } from "../../helpers/utils";
@@ -18,6 +20,23 @@ import PageHeader from "./InferencePageHeader";
 import { fetchPatientDropdown } from "./Inference.service";
 
 type InferencePhase = "idle" | "uploading" | "processing" | "completed";
+
+type ViewImages = {
+  left: string | null;
+  right: string | null;
+  front: string | null;
+};
+
+type ResultView = "simulated" | "contour";
+
+const RESULT_VIEW_OPTIONS: {
+  value: ResultView;
+  label: string;
+  icon: typeof ScanFace;
+}[] = [
+  { value: "simulated", label: "Simulated View", icon: ScanFace },
+  { value: "contour", label: "Contour View", icon: Spline },
+];
 
 const extractImageIdFromFileName = (fileName?: string | null) => {
   if (!fileName) return null;
@@ -53,6 +72,11 @@ const Inference = () => {
   const [isProcessing, setIsProcessing] = useState(false);
   const [isDropdownLoading, setIsDropdownLoading] = useState(false);
   const [phase, setPhase] = useState<InferencePhase>("idle");
+  const [resultImages, setResultImages] = useState<Record<
+    ResultView,
+    ViewImages
+  > | null>(null);
+  const [resultView, setResultView] = useState<ResultView>("simulated");
   const processingTimeoutRef = useRef<number | null>(null);
 
   const { latestPrediction, clearPrediction } = useSocket();
@@ -87,7 +111,22 @@ const Inference = () => {
       if (latestPrediction.status === "success") {
         const { data } = latestPrediction;
 
-        setImages({ left: data.left, right: data.right, front: data.front });
+        const simulated = {
+          left: data.left,
+          right: data.right,
+          front: data.front,
+        };
+
+        setImages(simulated);
+        setResultImages({
+          simulated,
+          contour: {
+            left: data.left_line ?? data.left,
+            right: data.right_line ?? data.right,
+            front: data.front_line ?? data.front,
+          },
+        });
+        setResultView("simulated");
         toastHelper.success("Inference completed successfully!");
         setPhase("completed");
       } else if (latestPrediction.status === "failed") {
@@ -121,6 +160,8 @@ const Inference = () => {
   const resetInference = () => {
     clearProcessingTimeout();
     setImages({ left: null, right: null, front: null });
+    setResultImages(null);
+    setResultView("simulated");
     setUploadedFileNames({ left: null, right: null, front: null });
     setCsvData(null);
     setSavedPointsArray(null);
@@ -159,6 +200,9 @@ const Inference = () => {
     setShowLandmarkModal(false);
     toastHelper.success("Front landmarks saved successfully!");
   };
+
+  const displayImages =
+    phase === "completed" && resultImages ? resultImages[resultView] : images;
 
   const isReadyToSubmit =
     images.left &&
@@ -277,7 +321,7 @@ const Inference = () => {
                       id="left"
                       title="Left Profile"
                       subtitle="90° lateral view"
-                      imageDataUrl={images.left}
+                      imageDataUrl={displayImages.left}
                       bgImage="/leftUploadPlaceHolder.png"
                       onUpload={handleUpload}
                       onRemove={handleRemove}
@@ -289,7 +333,7 @@ const Inference = () => {
                       id="right"
                       title="Right Profile"
                       subtitle="90° lateral view"
-                      imageDataUrl={images.right}
+                      imageDataUrl={displayImages.right}
                       bgImage="/rightUploadPlaceHolder.png"
                       onUpload={handleUpload}
                       onRemove={handleRemove}
@@ -336,7 +380,7 @@ const Inference = () => {
                       id="front"
                       title="Front Face"
                       subtitle="Directly facing camera. No tilt."
-                      imageDataUrl={images.front}
+                      imageDataUrl={displayImages.front}
                       bgImage="/frontUploadPlaceHolder.png"
                       hasCsv={!!csvData}
                       onUpload={handleUpload}
@@ -364,7 +408,34 @@ const Inference = () => {
             </div>
 
             <div className="shrink-0 bg-white p-6 rounded-2xl shadow-sm border border-slate-200 flex flex-col md:flex-row items-center justify-between gap-4">
-              <div>
+              <div className="flex flex-col lg:flex-row items-center gap-4 w-full md:w-auto">
+                {phase === "completed" && resultImages && (
+                  <div
+                    role="group"
+                    aria-label="Result view"
+                    className="inline-flex w-full sm:w-auto p-1 bg-slate-100 border border-slate-200 rounded-xl shrink-0"
+                  >
+                    {RESULT_VIEW_OPTIONS.map(({ value, label, icon: Icon }) => {
+                      const isActive = resultView === value;
+                      return (
+                        <button
+                          key={value}
+                          type="button"
+                          aria-pressed={isActive}
+                          onClick={() => setResultView(value)}
+                          className={`flex-1 sm:flex-none flex items-center justify-center gap-2 px-4 py-2 rounded-lg text-sm font-semibold transition-all duration-200 ${
+                            isActive
+                              ? "bg-white text-teal-700 shadow-sm"
+                              : "text-slate-500 hover:text-slate-700 cursor-pointer"
+                          }`}
+                        >
+                          <Icon className="w-4 h-4" />
+                          {label}
+                        </button>
+                      );
+                    })}
+                  </div>
+                )}
                 {phase === "completed" ? (
                   <p className="text-emerald-600 font-medium text-sm flex items-center gap-2">
                     <CheckCircle className="w-4 h-4" />

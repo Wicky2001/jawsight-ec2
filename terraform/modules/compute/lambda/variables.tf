@@ -57,3 +57,16 @@ variable "image_processing_queue_arn" {
   type        = string
   default     = ""
 }
+
+variable "openai_api_key" {
+  description = "OpenAI API key used by the Lambda for image generation. Empty skips setting it."
+  type        = string
+  default     = ""
+  sensitive   = true
+}
+
+variable "openai_image_model" {
+  description = "OpenAI image model used by the Lambda"
+  type        = string
+  default     = "gpt-image-1.5"
+}

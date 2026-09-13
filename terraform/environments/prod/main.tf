@@ -64,9 +64,10 @@ module "rds" {
 }
 
 module "s3" {
-  source       = "../../modules/storage/s3"
-  project_name = var.project_name
-  environment  = var.environment
+  source          = "../../modules/storage/s3"
+  project_name    = var.project_name
+  environment     = var.environment
+  model_file_path = "${path.root}/../../../lambda/models/u2net_human_seg.onnx"
 }
 
 module "sqs" {
@@ -82,11 +83,11 @@ module "sns" {
   environment  = var.environment
 }
 
-module "sns_subscription" {
-  source      = "../../modules/messaging/subscriptions"
-  topic_arn   = module.sns.topic_arn
-  webhook_url = var.webhook_url
-}
+# module "sns_subscription" {
+#   source      = "../../modules/messaging/subscriptions"
+#   topic_arn   = module.sns.topic_arn
+#   webhook_url = var.webhook_url
+# }
 
 module "ecr" {
   source       = "../../modules/storage/ecr"
@@ -133,4 +134,6 @@ module "lambda" {
   s3_bucket_name             = module.s3.data_s3_bucket_name
   sns_topic_arn              = module.sns.topic_arn
   image_processing_queue_arn = module.sqs.image_processing_queue_arn
+  openai_api_key             = var.openai_api_key
+  openai_image_model         = var.openai_image_model
 }

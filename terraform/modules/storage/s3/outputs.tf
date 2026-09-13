@@ -24,3 +24,8 @@ output "public_model_s3_bucket_arn" {
   description = "ARN of the public model storage"
   value       = aws_s3_bucket.public-model-storage.arn
 }
+
+output "u2net_model_url" {
+  description = "Public URL of the uploaded u2net_human_seg.onnx (used by lambda/Dockerfile)"
+  value       = var.model_file_path == null ? null : "https://${aws_s3_bucket.public-model-storage.bucket}.s3.${aws_s3_bucket.public-model-storage.region}.amazonaws.com/${aws_s3_object.u2net_human_seg_model[0].key}"
+}
