@@ -10,7 +10,7 @@ env:
   ECR_BACKEND_REPO: jawsight-production-backend
   ECR_FRONTEND_REPO: jawsight-production-frontend
   ECR_MIGRATIONS_REPO: jawsight-production-migrations
-  S3_ARTIFACTS_BUCKET: jawsight-deployment-artifacts-473280638005
+  S3_ARTIFACTS_BUCKET: jawsight-deployment-artifacts-677501681528
 
 jobs:
   deploy-to-ec2:
