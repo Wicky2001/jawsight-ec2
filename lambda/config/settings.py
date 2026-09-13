@@ -27,6 +27,21 @@ SNS_TOPIC_ARN = os.getenv("SNS_TOPIC_ARN")
 ENV = os.getenv("ENV") or os.getenv("ENVIRONMENT") or "production"
 
 # =========================================================
+# AI IMAGE GENERATION (OPENAI)
+# =========================================================
+OPENAI_API_KEY          = os.getenv("OPENAI_API_KEY")
+OPENAI_IMAGE_MODEL      = os.getenv("OPENAI_IMAGE_MODEL", "gpt-image-1.5")
+OPENAI_IMAGE_QUALITY    = os.getenv("OPENAI_IMAGE_QUALITY", "high")      # low | medium | high
+OPENAI_INPUT_FIDELITY   = os.getenv("OPENAI_INPUT_FIDELITY", "high")     # set empty to not send it
+OPENAI_IMAGE_EDIT_URL   = "https://api.openai.com/v1/images/edits"
+OPENAI_REQUEST_TIMEOUT  = 600  # seconds
+
+AI_SIDE_MASK_INWARD_RATIO = 0.6   # how far the side mask reaches back towards the ear (x nose-to-bottom length)
+AI_SIDE_MASK_TOP_RATIO    = 0.1   # side mask starts this far below the nose (x nose-to-bottom length)
+AI_MASK_DILATE_RATIO      = 0.03  # mask growth (x image diagonal)
+AI_MAX_UPLOAD_SIZE        = 1536
+
+# =========================================================
 # GLOBAL VISUALIZATION SETTINGS (FRONT FACE)
 # =========================================================
 FRONT_FACE_COLOR_PRE_OP    = (255, 0, 0)      # Solid Blue (Doctor's Marks)

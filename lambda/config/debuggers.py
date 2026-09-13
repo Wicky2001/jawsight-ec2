@@ -17,6 +17,7 @@ from config.settings import (
 from utils.logger import logger
 from utils.helpers import preprocess_image, detect_nose_anchor, get_native_trace, resample_points
 from services.s3_service import read_file_from_s3
+from services.ai_image_service import build_side_mask, build_front_mask
 from models.exceptions import UnsuitableImageError
 from pathlib import Path
 
@@ -36,17 +37,19 @@ def process_images_debuggers(input_images_details):
     output_data = {
         "left_image": None,
         "right_image": None,
-        "front_image": None
+        "front_image": None,
+        "ai_inputs": {}
     }
-      
+
     for image_data in input_images_details:
         side = image_data.get("side")
         bucket_key = image_data.get("bucket_key")
         image_id=image_data.get("image_id")
-        
+
         if side == "left" or side == "right":
             logger.info("🪲 DEBUGGER: generating side debugger image for side=%s image_id=%s", side, image_id)
-            side, output_img = process_single_image_left_or_right_debuggers(bucket_key, side, image_id)
+            side, output_img, ai_input = process_single_image_left_or_right_debuggers(bucket_key, side, image_id)
+            output_data["ai_inputs"][side] = ai_input
             if side == "left":
                 output_data["left_image"] = output_img
                 logger.info("✅ DEBUGGER: left-side debugger image generated successfully for image_id=%s", image_id)
@@ -55,7 +58,7 @@ def process_images_debuggers(input_images_details):
                 logger.info("✅ DEBUGGER: right-side debugger image generated successfully for image_id=%s", image_id)
         else:
             logger.info("🪲 DEBUGGER: generating front debugger image for image_id=%s", image_id)
-            output_data["front_image"] = process_front_face_debuggers(
+            output_data["front_image"], output_data["ai_inputs"]["front"] = process_front_face_debuggers(
                 bucket_key,
                 side=side,
                 image_id=image_id,
@@ -162,8 +165,15 @@ def process_single_image_left_or_right_debuggers(bucket_key, side, image_id):
     cv2.drawMarker(output_img, (x_start + int(30 * scale_mult), row3_y - int(5 * scale_mult)), FRONT_FACE_COLOR_ANCHOR, markerType=cv2.MARKER_TILTED_CROSS, markerSize=FRONT_FACE_RADIUS_ANCHOR, thickness=FRONT_FACE_THICKNESS_LINE)
     cv2.putText(output_img, "Nose Anchor", (text_x, row3_y), font, f_scale, FRONT_FACE_COLOR_TEXT, f_thick)
 
+    ai_input = {
+        "view": side,
+        "image": img_bgr,
+        "overlay": output_img,
+        "mask": build_side_mask(img_bgr.shape, pre_pixel_coords, post_pixel_coords, nose_pt, is_left),
+    }
+
     logger.info("✅ DEBUGGER: side-image debugger pipeline completed successfully. side=%s, image_id=%s", side, image_id)
-    return side, output_img
+    return side, output_img, ai_input
 
 def process_front_face_debuggers(bucket_key, side=None, image_id=None):
     """
@@ -310,8 +320,15 @@ def process_front_face_debuggers(bucket_key, side=None, image_id=None):
     cv2.drawMarker(output_img, (x_start + int(37 * scale_mult), row3_y - int(5 * scale_mult)), color=FRONT_FACE_COLOR_ANCHOR, markerType=cv2.MARKER_TILTED_CROSS, markerSize=FRONT_FACE_RADIUS_ANCHOR, thickness=3)
     cv2.putText(output_img, "Nose Anchor", (text_x, row3_y), font, f_scale, FRONT_FACE_COLOR_TEXT, f_thick)
 
+    ai_input = {
+        "view": "front",
+        "image": img_bgr,
+        "overlay": output_img,
+        "mask": build_front_mask(img_bgr.shape, pre_jaw, post_jaw, pre_lips, post_lips),
+    }
+
     logger.info("✅ DEBUGGER: front-image debugger pipeline completed successfully for image_id=%s", image_id)
-    return output_img
+    return output_img, ai_input
 
 
 

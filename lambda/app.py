@@ -4,6 +4,7 @@ from models.exceptions import S3BucketError, UnsuitableImageError
 from services.s3_service import has_at_least_n_objects, save_image_to_s3_bucket
 from services.sns_service import push_to_sns
 from services.image_service import process_images
+from services.ai_image_service import generate_ai_images
 from aws_xray_sdk.core import patch_all
 from config.debuggers import check_debuggers_exist,process_images_debuggers
 
@@ -67,23 +68,32 @@ def lambda_handler(event, context):
             
             
             
+            ai_images = generate_ai_images(output_image_data["ai_inputs"])
+
             s3_upload_details = [
                 {"key": f"{output_folder_key}left", "image": output_image_data["left_image"]},
                 {"key": f"{output_folder_key}right", "image": output_image_data["right_image"]},
-                {"key": f"{output_folder_key}front", "image": output_image_data["front_image"]}
+                {"key": f"{output_folder_key}front", "image": output_image_data["front_image"]},
+                {"key": f"{output_folder_key}left_ai", "image": ai_images["left"]},
+                {"key": f"{output_folder_key}right_ai", "image": ai_images["right"]},
+                {"key": f"{output_folder_key}front_ai", "image": ai_images["front"]}
             ]
-            
+
             save_image_to_s3_bucket(s3_upload_details)
-            
+
+            # left/right/front are what the UI displays -> AI images. *_line keep the red-line images.
             sns_message_data = {
                 "doctor_id": doctor_id,
                 "patient_id": patient_id,
                 "iterationId": iteration_id,
                 "image_id": image_id,
                 "output_images_keys":{
-                    "left": f"{output_folder_key}left",
-                    "right": f"{output_folder_key}right",
-                    "front": f"{output_folder_key}front"
+                    "left": f"{output_folder_key}left_ai",
+                    "right": f"{output_folder_key}right_ai",
+                    "front": f"{output_folder_key}front_ai",
+                    "left_line": f"{output_folder_key}left",
+                    "right_line": f"{output_folder_key}right",
+                    "front_line": f"{output_folder_key}front"
                 },
             }
             

@@ -19,6 +19,7 @@ from config.settings import (
 from utils.logger import logger
 from utils.helpers import preprocess_image, detect_nose_anchor, get_native_trace, resample_points
 from services.s3_service import read_file_from_s3
+from services.ai_image_service import build_side_mask, build_front_mask
 from models.exceptions import UnsuitableImageError
 from models.networks import MandibularResidualMLP, FrontFacePredictionModel
 
@@ -132,8 +133,15 @@ def process_single_image_left_or_right(bucket_key, side):
     cv2.drawMarker(output_img, (x_start + int(30 * scale_mult), row3_y - int(5 * scale_mult)), FRONT_FACE_COLOR_ANCHOR, markerType=cv2.MARKER_TILTED_CROSS, markerSize=FRONT_FACE_RADIUS_ANCHOR, thickness=FRONT_FACE_THICKNESS_LINE)
     cv2.putText(output_img, "Nose Anchor", (text_x, row3_y), font, f_scale, FRONT_FACE_COLOR_TEXT, f_thick)
 
+    ai_input = {
+        "view": side,
+        "image": img_bgr,
+        "overlay": output_img,
+        "mask": build_side_mask(img_bgr.shape, pre_pixel_coords, pred_pixel_coords, nose_pt, is_left),
+    }
+
     logger.info("✅ SUCCESS: process_single_image_left_or_right completed. side=%s", side)
-    return side, output_img
+    return side, output_img, ai_input
 
 
 def process_front_face(image_key, csv_key):
@@ -248,30 +256,39 @@ def process_front_face(image_key, csv_key):
     cv2.drawMarker(output_img, (x_start + int(37 * scale_mult), row3_y - int(5 * scale_mult)), color=FRONT_FACE_COLOR_ANCHOR, markerType=cv2.MARKER_TILTED_CROSS, markerSize=FRONT_FACE_RADIUS_ANCHOR , thickness=3)
     cv2.putText(output_img, "Nose Anchor", (text_x, row3_y), font, f_scale, FRONT_FACE_COLOR_TEXT, f_thick)
 
+    ai_input = {
+        "view": "front",
+        "image": img_bgr,
+        "overlay": output_img,
+        "mask": build_front_mask(img_bgr.shape, pre_jaw, pred_jaw, pre_lips, pred_lips),
+    }
+
     logger.info("✅ SUCCESS: process_front_face completed for image_key=%s", image_key)
-    return output_img
+    return output_img, ai_input
 
 def process_images(input_images_details):
     logger.info("✅ SUCCESS: process_images started with %d inputs", len(input_images_details))
-    
+
     output_data = {
         "left_image": None,
         "right_image": None,
-        "front_image": None
+        "front_image": None,
+        "ai_inputs": {}
     }
-      
+
     for image_data in input_images_details:
         side = image_data.get("side")
         bucket_key = image_data.get("bucket_key")
-        
+
         if side == "left" or side == "right":
-            side, output_img = process_single_image_left_or_right(bucket_key, side)
+            side, output_img, ai_input = process_single_image_left_or_right(bucket_key, side)
             if side == "left":
                 output_data["left_image"] = output_img
             else:
                 output_data["right_image"] = output_img
+            output_data["ai_inputs"][side] = ai_input
         else:
-            output_data["front_image"] = process_front_face(bucket_key, csv_key=image_data.get("csv_key"))
+            output_data["front_image"], output_data["ai_inputs"]["front"] = process_front_face(bucket_key, csv_key=image_data.get("csv_key"))
 
     logger.info("✅ SUCCESS: process_images completed")
     return output_data
