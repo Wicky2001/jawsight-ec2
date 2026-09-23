@@ -52,11 +52,7 @@ function NavLinks({ onNavigate }: { onNavigate?: () => void }) {
       >
         Patients
       </Link>
-      <Link
-        to="#"
-        className="hover:text-primary transition-colors pb-1"
-        onClick={onNavigate}
-      >
+      <Link to="/about" className={linkClass("/about")} onClick={onNavigate}>
         About Us
       </Link>
     </>
