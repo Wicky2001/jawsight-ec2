@@ -8,7 +8,8 @@ import requests
 from config.settings import (
     OPENAI_API_KEY, OPENAI_IMAGE_MODEL, OPENAI_IMAGE_QUALITY, OPENAI_INPUT_FIDELITY,
     OPENAI_IMAGE_EDIT_URL, OPENAI_REQUEST_TIMEOUT,
-    AI_SIDE_MASK_INWARD_RATIO, AI_SIDE_MASK_TOP_RATIO, AI_MASK_DILATE_RATIO, AI_MAX_UPLOAD_SIZE
+    AI_SIDE_MASK_INWARD_RATIO, AI_SIDE_MASK_TOP_RATIO, AI_MASK_DILATE_RATIO, AI_MAX_UPLOAD_SIZE,
+    AI_KEEP_ORIGINAL_OUTSIDE_MASK, AI_MATCH_COLOR, AI_COMPOSITE_FEATHER_RATIO
 )
 from utils.logger import logger
 
@@ -22,9 +23,15 @@ JAW_COMPLETION_INSTRUCTION = (
 )
 
 KEEP_IDENTITY_INSTRUCTION = (
-    "Keep it the same person: identical identity, facial features above the mouth, skin tone and texture, "
-    "facial hair, hair, ears, lighting, camera angle, clothing and green background. "
-    "The result must be a clean photorealistic photograph with no red lines, dots, markers, text or legend box."
+    "This is a real photograph, not a 3D render or illustration. Return the SAME photograph with only the "
+    "jaw outline changed. Do not re-draw, re-render, stylise or beautify the person. "
+    "Do NOT retouch or smooth the skin: keep the original skin texture, pores, blemishes, acne, scars, moles, "
+    "stubble and facial hair exactly as they are, including inside the edited area. "
+    "Do not change the hair, eyes, eyebrows, ears, nose, teeth, braces, clothing or the green background. "
+    "Do not change the colour balance, brightness, contrast, sharpness, grain, focus or camera angle, and do "
+    "not upscale or clean up the photo. Every pixel outside the jaw area must stay identical to image 1. "
+    "The result must look like an unedited photograph taken with the same camera, with no red lines, dots, "
+    "markers, text or legend box."
 )
 
 PROMPTS = {
@@ -34,7 +41,8 @@ PROMPTS = {
         "post-operative soft-tissue profile of the lower face (lips, chin, under-chin and jaw). "
         "Ignore the legend box and the red 'x' nose marker in image 2. "
         "Edit only the masked lower-face area of image 1 so the skin outline of the lower lip, chin, "
-        "under-chin and jawline follows the red line exactly. "
+        "under-chin and jawline follows the red line exactly, moving the existing skin rather than "
+        "repainting it. "
         f"{JAW_COMPLETION_INSTRUCTION} {KEEP_IDENTITY_INSTRUCTION}"
     ),
     "front": (
@@ -43,7 +51,8 @@ PROMPTS = {
         "post-operative jawline contour and lip shape. "
         "Ignore the legend box, the red dots and the red 'x' nose marker in image 2. "
         "Edit only the masked lower-face area of image 1 so the outer jawline and chin follow the red jaw "
-        "line exactly and the lips match the red lip outline, keeping the face symmetric and natural. "
+        "line exactly and the lips match the red lip outline, keeping the face symmetric and natural and "
+        "moving the existing skin rather than repainting it. "
         f"{JAW_COMPLETION_INSTRUCTION} {KEEP_IDENTITY_INSTRUCTION}"
     ),
 }
@@ -178,8 +187,45 @@ def generate_ai_image(ai_input):
     # Back to the original image size (undo the padding)
     result_img = cv2.resize(result_img, (pw, ph), interpolation=cv2.INTER_CUBIC)[:h, :w]
 
+    if AI_MATCH_COLOR:
+        result_img = _match_color(result_img, image, ai_input["mask"])
+
+    if AI_KEEP_ORIGINAL_OUTSIDE_MASK:
+        result_img = _composite_with_original(image, result_img, ai_input["mask"])
+
     logger.info("✅ SUCCESS: generate_ai_image completed. view=%s", view)
     return result_img
+
+
+def _match_color(ai_img, original_img, mask):
+    """Removes the global tone/brightness shift the model applies, using the untouched area as reference."""
+    reference = mask == 0
+    if reference.sum() < 1000:
+        return ai_img
+
+    ai_lab = cv2.cvtColor(ai_img, cv2.COLOR_BGR2LAB).astype(np.float32)
+    orig_lab = cv2.cvtColor(original_img, cv2.COLOR_BGR2LAB).astype(np.float32)
+
+    for channel in range(3):
+        ai_ref = ai_lab[:, :, channel][reference]
+        orig_ref = orig_lab[:, :, channel][reference]
+        ai_std = ai_ref.std()
+        if ai_std < 1e-3:
+            continue
+        gain = min(max(orig_ref.std() / ai_std, 0.8), 1.25)
+        ai_lab[:, :, channel] = (ai_lab[:, :, channel] - ai_ref.mean()) * gain + orig_ref.mean()
+
+    return cv2.cvtColor(np.clip(ai_lab, 0, 255).astype(np.uint8), cv2.COLOR_LAB2BGR)
+
+
+def _composite_with_original(original_img, ai_img, mask):
+    """Keeps the original photo everywhere outside the jaw mask, with a soft edge in between."""
+    h, w = mask.shape[:2]
+    k = max(3, int(np.sqrt(w**2 + h**2) * AI_COMPOSITE_FEATHER_RATIO)) | 1
+    weight = cv2.GaussianBlur(mask, (k, k), 0).astype(np.float32) / 255.0
+    weight = cv2.merge([weight, weight, weight])
+    blended = original_img.astype(np.float32) * (1.0 - weight) + ai_img.astype(np.float32) * weight
+    return np.clip(blended, 0, 255).astype(np.uint8)
 
 
 def generate_ai_images(ai_inputs):

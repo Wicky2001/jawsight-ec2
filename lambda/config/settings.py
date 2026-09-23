@@ -41,6 +41,10 @@ AI_SIDE_MASK_TOP_RATIO    = 0.1   # side mask starts this far below the nose (x 
 AI_MASK_DILATE_RATIO      = 0.03  # mask growth (x image diagonal)
 AI_MAX_UPLOAD_SIZE        = 1536
 
+AI_KEEP_ORIGINAL_OUTSIDE_MASK = True   # paste the original photo back outside the jaw mask
+AI_MATCH_COLOR                = True   # undo the global tone shift the model applies
+AI_COMPOSITE_FEATHER_RATIO    = 0.012  # soft blend width at the mask edge (x image diagonal)
+
 # =========================================================
 # GLOBAL VISUALIZATION SETTINGS (FRONT FACE)
 # =========================================================
