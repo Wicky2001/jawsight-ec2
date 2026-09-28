@@ -12,9 +12,6 @@ import ApiError from "../../helpers/ApiError.js";
 import httpStatus from "http-status";
 import { Op } from "sequelize";
 
-const DUPLICATE_PATIENT_EMAIL_MESSAGE =
-  "A patient with this email already exists for this doctor.";
-
 const findPatientByEmail = async (
   doctorId: number,
   email: string,

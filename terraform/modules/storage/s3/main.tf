@@ -1,11 +1,13 @@
 data "aws_caller_identity" "current" {}
 
 resource "aws_s3_bucket" "data" {
-  bucket = "${var.project_name}-${var.environment}-data-${data.aws_caller_identity.current.account_id}"
+  bucket        = "${var.project_name}-${var.environment}-data-${data.aws_caller_identity.current.account_id}"
+  force_destroy = true
 }
 
 resource "aws_s3_bucket" "deployment_artifacts" {
-  bucket = "${var.project_name}-deployment-artifacts-${data.aws_caller_identity.current.account_id}"
+  bucket        = "${var.project_name}-deployment-artifacts-${data.aws_caller_identity.current.account_id}"
+  force_destroy = true
 }
 
 resource "aws_s3_bucket_versioning" "versioning" {
@@ -17,7 +19,8 @@ resource "aws_s3_bucket_versioning" "versioning" {
 
 
 resource "aws_s3_bucket" "public-model-storage" {
-  bucket = "${var.project_name}-public-model-storage-${data.aws_caller_identity.current.account_id}"
+  bucket        = "${var.project_name}-public-model-storage-${data.aws_caller_identity.current.account_id}"
+  force_destroy = true
 }
 
 # Step 1: Disable the account-level public access blocks for this bucket
